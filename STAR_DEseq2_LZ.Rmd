@@ -141,11 +141,10 @@ colorsV5<-c("cornflowerblue", "orange2", "green3","purple","red")#Venn colours
 #col_fun(seq(-3, 3))
 ```
 
-
+# If starting from STAR output files then no edits required. If starting from a gene counts file then the chunk below needs to be run (and the 3 chunks after that giving qc information need to be skipped as they won't run successfully). 
 ```{r}
-#if starting from count
+# If starting from a gene counts file then uncomment the line below and read in your counts file
 #countsTable<-read.delim("mergedCounts_rev.txt", header = TRUE, sep = "\t",check.names=FALSE,row.names=1)
-#countsTable <-countsTable[,c(1:15)]#if samples need removing
 ```
 
 
