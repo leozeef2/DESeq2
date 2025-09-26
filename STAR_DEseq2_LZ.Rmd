@@ -149,7 +149,7 @@ If starting from STAR output files then no edits required. If starting from a ge
 ```
 
 
-```{r}
+```{r,fig.height = 8,fig.width = 12}
 #Read in counts from STAR output files ReadsPerGene.out.tab
 ff <- list.files(  pattern = "*ReadsPerGene.out.tab$", full.names = TRUE )#assume files in working directory
 counts.files <- lapply( ff, read.table, skip = 4 )
@@ -291,19 +291,80 @@ dds<-DESeq(ddsHTSeq,betaPrior=FALSE)
 
 ```{r}
 #Export normalised data
-normCounts<-as.data.frame(counts(dds,normalized=TRUE))
-colnames(normCounts) <- paste0(colnames(normCounts),'_normalised')
-write.csv(normCounts,"DESeq_outputNormalised.csv")
-baseMeans <- sapply( levels(dds$Sample_group), function(lvl) rowMeans( counts(dds,normalized=TRUE)[,dds$Sample_group == lvl,drop = FALSE] ) )
-colnames(baseMeans) <- paste0(colnames(baseMeans),'_mean')
-write.csv(baseMeans,"DESeq_Means_Sample_group.csv")
+#Biomart annotation
+BMannot<-read.table(text=row.names(countsTable), sep=".", header=FALSE, col.names = paste0("Ensembl", 1:2), stringsAsFactors=FALSE)#strip off the Ensembl version number
+BMannot$Original_ID<-rownames(countsTable)
+#head(BMannot)
 ```
 
 
 ```{r}
+#library( "biomaRt" )
+#mouse
+#ensembl = useMart( "ensembl", dataset = "mmusculus_gene_ensembl" )#mouse
+#ensembl= useEnsembl( "ensembl", dataset = "mmusculus_gene_ensembl")
+#listAttributes(ensembl)
+#Genemap <- getBM( attributes = c("ensembl_gene_id","mgi_symbol", "description", "chromosome_name","start_position","end_position","strand","gene_biotype","entrezgene_id"),
+#filters = "ensembl_gene_id",values = BMannot$Ensembl1,mart = ensembl )
+
+#Or for human
+ensembl = useMart( "ensembl", dataset = "hsapiens_gene_ensembl" )
+Genemap <- getBM( attributes = c("ensembl_gene_id","hgnc_symbol", "description", "chromosome_name","start_position","end_position","strand","gene_biotype","entrezgene_id"),
+filters = "ensembl_gene_id",values = BMannot$Ensembl1,mart = ensembl )
+
+#alternatives to use if biomart site is flakey
+#ensembl= useEnsembl( "ensembl", dataset = "mmusculus_gene_ensembl")
+#ensembl= useEnsembl( "ensembl", dataset = "hsapiens_gene_ensembl")
+#ensembl = useMart("ensembl", dataset = "hsapiens_gene_ensembl", host="useast.ensembl.org", ensemblRedirect = FALSE)
+
+#other organisms
+#ensembl <- useEnsembl(biomart = "ensembl")
+#listDatasets(mart = ensembl)
+```
+
+```{r}
+idx <- match( BMannot$Ensembl1, Genemap$ensembl_gene_id )
+#BMannot$Gene_Symbol<- Genemap$mgi_symbol[ idx ]#mouse
+BMannot$Gene_Symbol<- Genemap$hgnc_symbol[ idx ]#human
+BMannot$description<- Genemap$description[ idx ]
+BMannot$Ensembl<- Genemap$ensembl_gene_id[ idx ]
+BMannot$chr<- Genemap$chromosome_name[ idx ]
+BMannot$start<- Genemap$start_position[ idx ]
+BMannot$end<- Genemap$end_position[ idx ]
+BMannot$strand<- Genemap$strand[ idx ]
+BMannot$gene_biotype<- Genemap$gene_biotype[ idx ]
+BMannot$entrez<- Genemap$entrezgene_id[ idx ]
+BMannot$Gene_Symbol <- ifelse(BMannot$Gene_Symbol=="", BMannot$Ensembl, BMannot$Gene_Symbol)
+#head(BMannot)
+baseMeans <- sapply( levels(dds$Sample_group), function(lvl) rowMeans( counts(dds,normalized=TRUE)[,dds$Sample_group == lvl,drop = FALSE] ) )
+colnames(baseMeans) <- paste0(colnames(baseMeans),'_mean')
+normCounts<-as.data.frame(counts(dds,normalized=TRUE))
+colnames(normCounts) <- paste0(colnames(normCounts),'_normalised')
+countsTableT<-countsTable
+colnames(countsTableT) <- paste0(colnames(countsTableT),'_rawCounts')
+resAll <- cbind(BMannot, countsTableT, normCounts, baseMeans)
+baseMeans <- sapply( levels(dds$Sample_group), function(lvl) rowMeans( counts(dds,normalized=TRUE)[,dds$Sample_group == lvl,drop = FALSE] ) )
+head(resAll)
+write.table((resAll<-resAll[,-c(1,2,6)]),"counts.csv",  sep = ",", row.names = FALSE, col.names = TRUE, quote=FALSE)
+```
+
+```{r}
 #logData <- rlogTransformation(dds, blind=TRUE)
 logData <- varianceStabilizingTransformation(dds, blind=TRUE)#quicker for big dataset
+#Export log2 normalised data
+logCounts<-as.data.frame(assay(logData))
+logCounts <- cbind(resAll[,c(1,2)],logCounts)
+write.csv(logCounts[,-c(1)],"log2.csv")
+```
 
+```{r}
+#Export normalised data
+#normCounts<-as.data.frame(counts(dds,normalized=TRUE))
+#colnames(normCounts) <- paste0(colnames(normCounts),'_normalised')
+#write.csv(normCounts,"DESeq_outputNormalised.csv")
+#baseMeans <- sapply( levels(dds$Sample_group), function(lvl) rowMeans( counts(dds,normalized=TRUE)[,dds$Sample_group == lvl,drop = FALSE] ) )
+#colnames(baseMeans) <- paste0(colnames(baseMeans),'_mean')
+#write.csv(baseMeans,"DESeq_Means_Sample_group.csv")
 ```
 
 ### PCA
@@ -462,55 +523,7 @@ boxplot(log10(assays(dds)[["cooks"]]), range=0, las=2,main="Boxplot of Cook's di
 ```
 
 
-```{r}
-#Biomart annotation
-BMannot<-read.table(text=row.names(countsTable), sep=".", header=FALSE, col.names = paste0("Ensembl", 1:2), stringsAsFactors=FALSE)#strip off the Ensembl version number
-BMannot$Original_ID<-rownames(countsTable)
-head(BMannot)
 
-```
-
-
-```{r}
-#library( "biomaRt" )
-#mouse
-#ensembl = useMart( "ensembl", dataset = "mmusculus_gene_ensembl" )#mouse
-#ensembl= useEnsembl( "ensembl", dataset = "mmusculus_gene_ensembl")
-#listAttributes(ensembl)
-#Genemap <- getBM( attributes = c("ensembl_gene_id","mgi_symbol", "description", "chromosome_name","start_position","end_position","strand","gene_biotype","entrezgene_id"),
-#filters = "ensembl_gene_id",values = BMannot$Ensembl1,mart = ensembl )
-
-#Or for human
-ensembl = useMart( "ensembl", dataset = "hsapiens_gene_ensembl" )
-Genemap <- getBM( attributes = c("ensembl_gene_id","hgnc_symbol", "description", "chromosome_name","start_position","end_position","strand","gene_biotype","entrezgene_id"),
-filters = "ensembl_gene_id",values = BMannot$Ensembl1,mart = ensembl )
-
-#alternatives to use if biomart site is flakey
-#ensembl= useEnsembl( "ensembl", dataset = "mmusculus_gene_ensembl")
-#ensembl= useEnsembl( "ensembl", dataset = "hsapiens_gene_ensembl")
-#ensembl = useMart("ensembl", dataset = "hsapiens_gene_ensembl", host="useast.ensembl.org", ensemblRedirect = FALSE)
-
-#other organisms
-#ensembl <- useEnsembl(biomart = "ensembl")
-#listDatasets(mart = ensembl)
-```
-
-```{r}
-idx <- match( BMannot$Ensembl1, Genemap$ensembl_gene_id )
-#BMannot$Gene_Symbol<- Genemap$mgi_symbol[ idx ]#mouse
-BMannot$Gene_Symbol<- Genemap$hgnc_symbol[ idx ]#human
-BMannot$description<- Genemap$description[ idx ]
-BMannot$Ensembl<- Genemap$ensembl_gene_id[ idx ]
-BMannot$chr<- Genemap$chromosome_name[ idx ]
-BMannot$start<- Genemap$start_position[ idx ]
-BMannot$end<- Genemap$end_position[ idx ]
-BMannot$strand<- Genemap$strand[ idx ]
-BMannot$gene_biotype<- Genemap$gene_biotype[ idx ]
-BMannot$entrez<- Genemap$entrezgene_id[ idx ]
-BMannot$Gene_Symbol <- ifelse(BMannot$Gene_Symbol=="", BMannot$Ensembl, BMannot$Gene_Symbol)
-head(BMannot)
-write.table(BMannot,"biomart.txt",  sep = "\t")
-```
 
 
 ```{r}
