@@ -345,7 +345,7 @@ colnames(countsTableT) <- paste0(colnames(countsTableT),'_rawCounts')
 resAll <- cbind(BMannot, countsTableT, normCounts, baseMeans)
 baseMeans <- sapply( levels(dds$Sample_group), function(lvl) rowMeans( counts(dds,normalized=TRUE)[,dds$Sample_group == lvl,drop = FALSE] ) )
 head(resAll)
-write.table((resAll<-resAll[,-c(1,2,6)]),"counts.csv",  sep = ",", row.names = FALSE, col.names = TRUE, quote=FALSE)
+write.table(resAll[,-c(1:2)],"resAll.txt",  sep = "\t")
 ```
 
 ```{r}
@@ -5016,7 +5016,7 @@ lapply(listAll, head)
 
 listAllR<-list(ReactomeUplist_TestA,ReactomeDownlist_TestA,ReactomeUplist_TestB,ReactomeDownlist_TestB,ReactomeUplist_TestC,ReactomeDownlist_TestC,ReactomeUplist_TestD,ReactomeDownlist_TestD,ReactomeUplist_TestE,ReactomeDownlist_TestE)
 #need to name the vectors in the list, example here is for 5 groups
-names(listAllR)<-c("TestA_UP", "TestB_UP", "TestC_UP", "TestD_UP", "TestE_UP")#make sure order the same as above!!!
+names(listAllR)<-c("TestA_UP", "TestA_Down","TestB_UP","TestB_Down", "TestC_UP","TestC_Down", "TestD_UP","TestD_Down", "TestE_UP","TestE_Down")#make sure order the same as above!!!
 
 #listAllR<-list(ReactomeUplist_TestA,ReactomeDownlist_TestA,ReactomeUplist_TestB,ReactomeDownlist_TestB,ReactomeUplist_TestC,ReactomeDownlist_TestC,ReactomeUplist_TestD,ReactomeDownlist_TestD,ReactomeUplist_TestE,ReactomeDownlist_TestE,ReactomeUplist_TestF,ReactomeDownlist_TestF,ReactomeUplist_TestG,ReactomeDownlist_TestG,ReactomeUplist_TestH,ReactomeDownlist_TestH,ReactomeUplist_TestI,ReactomeDownlist_TestI,ReactomeUplist_TestJ,ReactomeDownlist_TestJ,ReactomeUplist_TestK,ReactomeDownlist_TestK,ReactomeUplist_TestL,ReactomeDownlist_TestL,ReactomeUplist_TestM,ReactomeDownlist_TestM,ReactomeUplist_TestN,ReactomeDownlist_TestN,ReactomeUplist_TestO,ReactomeDownlist_TestO,ReactomeUplist_TestP,ReactomeDownlist_TestP,ReactomeUplist_TestQ,ReactomeDownlist_TestQ,ReactomeUplist_TestR,ReactomeDownlist_TestR,ReactomeUplist_TestS,ReactomeDownlist_TestS,ReactomeUplist_TestT,ReactomeDownlist_TestT,ReactomeUplist_TestU,ReactomeDownlist_TestU,ReactomeUplist_TestV,ReactomeDownlist_TestV,ReactomeUplist_TestW,ReactomeDownlist_TestW,ReactomeUplist_TestX,ReactomeDownlist_TestX,ReactomeUplist_TestY,ReactomeDownlist_TestY,ReactomeUplist_TestZ,ReactomeDownlist_TestZ)
 #names(listAll)<-c("TestA_UP", "TestA_Down","TestB_UP","TestB_Down", "TestC_UP","TestC_Down", "TestD_UP","TestD_Down", "TestE_UP","TestE_Down", "TestF_UP","TestF_Down", "TestG_UP","TestG_Down", "TestH_UP","TestH_Down", "TestI_UP","TestI_Down", "TestJ_UP","TestJ_Down", "TestK_UP","TestK_Down", "TestL_UP","TestL_Down", "TestM_UP","TestM_Down", "TestN_UP","TestN_Down", "TestO_UP","TestO_Down", "TestP_UP","TestP_Down", "TestQ_UP","TestQ_Down", "TestR_UP","TestR_Down", "TestS_UP","TestS_Down", "TestT_UP","TestT_Down", "TestU_UP","TestU_Down", "TestV_UP","TestV_Down", "TestW_UP","TestW_Down", "TestX_UP","TestX_Down", "TestY_UP","TestY_Down", "TestZ_UP","TestZ_Down")#make sure order the same as above!!!
