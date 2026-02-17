@@ -271,7 +271,7 @@ Drug<-factor(c(rep("Untreated",4),rep("AZT",4),rep("Untreated",4),rep("AZT",4)),
              levels=c("Untreated","AZT"))#note names
 Batch<-factor(c("A","B","C","D","A","B","C","D","A","B","C","D","A","B","C","D"), levels=c("A","B","C","D"))
 Sex<-factor(c("M","M","F","F","M","M","F","F","M","M","F","F","M","M","F","F"), levels=c("F","M"))
-
+#Sample_group <-Sample_group[c(1:3, 5:7, 9:11,13:15)]
 myNames<-colnames(countsTable)[1:16]#note length
 colDataNames<-data.frame(row.names=myNames, Sample_group=Sample_group,Genotype=Genotype,Drug=Drug,Batch=Batch,Sex=Sex)
 colDataNames
@@ -578,7 +578,7 @@ DEcounter <- data.frame(DEcounts)
 ```
 
 ```{r}
-library("variancePartition")
+
 library("variancePartition")
 rv <- rowVars(assay(logData)) ## calculate the variance for each gene
 isexpr <- order(rv, decreasing=TRUE)[seq_len(min(500, length(rv)))] ## select the ntop genes by variance
@@ -2006,7 +2006,6 @@ ipa1000<-cbind(ipa1000,resIpa)
 resultsNames(dds)
 ```
 
-`
 
 ### CAA3_vs_BAA2
 
@@ -3701,7 +3700,13 @@ ipa1000<-cbind(ipa1000,resIpa)
 #dds<-DESeq(ddsHTSeq,test="LRT", reduced=~1)#,betaPrior=FALSE)
 ```
 
-
+```{r}
+#Final steps
+#write table with all results
+#countsTable <-resAll[,-c(1:2)]
+write.table(resAll[,-c(1:2)],"resAll.txt",  sep = "\t")
+write.table(ipa1000,"ipa1000.txt",  sep = "\t")
+```
 
 #Final Steps in series of contrasts
 
@@ -4419,14 +4424,13 @@ grid.arrange(gTree(children=vennPlot1), gTree(children=vennPlot2), gTree(childre
 #upset(fromList(listInput), order.by = "freq",nsets = 5, sets.x.label = "padj<0.1", empty.intersections = "on" )
 ```
 
-### GO_enrichments_top1000
 
-Functional Annotation
+### Top1000_GO_enrichments_clusterProfiler
+Functional Annotation on top 1000 Genes of each test using clusterprofiler. 
 ```{r}
 #If various groupings for functional annotation
 groupsName<-"_clusterProfiler"
 ```
-
 
 ```{r}
 path<-getwd()
@@ -4434,46 +4438,28 @@ dir.create(paste0(path,"/GO1000"))
 write.csv((DEcounter),paste0(path,"/GO1000/","DEcounts.csv"))
 ```
 
-Functional Annotation on top 1000 Genes using clusterprofiler. GO Analysis 
-
-
-
-
-
 ```{r}
 #Vector containing all Sample_group names for GO analysis
 #AllGeneNames<-row.names(read.delim("RNAseqJune2020_reanalysis_dupRemovedISGs_2Sym.txt", header = TRUE, sep = "\t",check.names=FALSE,row.names=1))
 AllGeneNames<-BMannot$Gene_Symbol
 ```
 
-
+This is the order of the tests:
 ```{r}
-
-listAll<-list(GOlist1000_TestA,GOlist1000_TestB,GOlist1000_TestC,GOlist1000_TestD,GOlist1000_TestE)
-#need to name the vectors in the list, example here is for 5 groups
-names(listAll)<-c("TestA", "TestB","TestC","TestD", "TestE")#make sure order the same as above!!!
-
-#listAll<-list(GOlist1000_TestA,GOlist1000_TestB,GOlist1000_TestC,GOlist1000_TestD,GOlist1000_TestE,GOlist1000_TestF,GOlist1000_TestG,GOlist1000_TestH,GOlist1000_TestI,GOlist1000_TestJ,GOlist1000_TestK,GOlist1000_TestL,GOlist1000_TestM,GOlist1000_TestN,GOlist1000_TestO,GOlist1000_TestP,GOlist1000_TestQ,GOlist1000_TestR,GOlist1000_TestS,GOlist1000_TestT,GOlist1000_TestU,GOlist1000_TestV,GOlist1000_TestW,GOlist1000_TestX,GOlist1000_TestY,GOlist1000_TestZ)
-#names(listAll)<-c("TestA", "TestB","TestC","TestD", "TestE","TestF","TestG", "TestH","TestI","TestJ", "TestK","TestL","TestM", "TestN","TestO","TestP", "TestQ","TestR","TestS","TestT","TestU","TestV","TestW","TestX","TestY","TestZ")#make sure order the same as above!!!
-
-#if you want to rearrange the order
-#listAll<-listAll[c("x3", "x7", "x8", "x2", "x6", "x5", "x4", "x1")]
-
+# 1. Dynamically gather all your "GOlist" variables into a named list
+target_vars <- ls(pattern = "^GOlist1000_")
+listAll <- mget(target_vars)
+names(listAll) <- gsub("GOlist1000_", "", target_vars) # Shortens names to just "TestA", "TestB", etc.
 lapply(listAll, head)
-
 ```
 
 ```{r}
-
-listAllR<-list(Reactomelist1000_TestA,Reactomelist1000_TestB,Reactomelist1000_TestC,Reactomelist1000_TestD,Reactomelist1000_TestE)
-#need to name the vectors in the list, example here is for 5 groups
-names(listAllR)<-c("TestA", "TestB","TestC","TestD", "TestE")#make sure order the same as above!!!
-
-#listAllR<-list(Reactomelist1000_TestA,Reactomelist1000_TestB,Reactomelist1000_TestC,Reactomelist1000_TestD,Reactomelist1000_TestE,Reactomelist1000_TestF,Reactomelist1000_TestG,Reactomelist1000_TestH,Reactomelist1000_TestI,Reactomelist1000_TestJ,Reactomelist1000_TestK,Reactomelist1000_TestL,Reactomelist1000_TestM,Reactomelist1000_TestN,Reactomelist1000_TestO,Reactomelist1000_TestP,Reactomelist1000_TestQ,Reactomelist1000_TestR,Reactomelist1000_TestS,Reactomelist1000_TestT,Reactomelist1000_TestU,Reactomelist1000_TestV,Reactomelist1000_TestW,Reactomelist1000_TestX,Reactomelist1000_TestY,Reactomelist1000_TestZ)
-#names(listAllR)<-c("TestA", "TestB","TestC","TestD", "TestE","TestF","TestG", "TestH","TestI","TestJ", "TestK","TestL","TestM", "TestN","TestO","TestP", "TestQ","TestR","TestS","TestT","TestU","TestV","TestW","TestX","TestY","TestZ")#make sure order the same as above!!!
-
+# 1. Dynamically gather all your "GOlist" variables into a named list
+# This replaces your manual listAll definition
+target_vars <- ls(pattern = "^Reactomelist1000_")
+listAllR <- mget(target_vars)
+names(listAllR) <- gsub("Reactomelist1000_", "", target_vars) # Shortens names to just "TestA", "TestB", etc.
 lapply(listAllR, head)
-
 ```
 
 ```{r}
@@ -4483,7 +4469,7 @@ res <- compareCluster(listAllR, fun="enrichPathway",universe = BMannot$entrez,
                    qvalueCutoff = 0.10,
                    readable=T)
 
-head(res)
+#head(res)
 write.csv(as.data.frame(res),paste0(path,"/GO1000/","Reactome",groupsName,".csv"))
 ```
 
@@ -4536,7 +4522,7 @@ plotCC=dotplot(cgoCC2,showCategory = 30,
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 dev.off()
 ```
-```{r,fig.height = 24,fig.width = 12}
+```{r,fig.height = 16,fig.width = 12}
 plotCC
 ```
 
@@ -4575,7 +4561,7 @@ plotBP=dotplot(cgoBP2,showCategory = 30,
 dev.off()
 ```
 
-```{r,fig.height = 42,fig.width = 12}
+```{r,fig.height = 16,fig.width = 12}
 plotBP
 
 ```
@@ -4616,7 +4602,7 @@ plotMF=dotplot(cgoMF2,showCategory = 30,
 dev.off()
 ```
 
-```{r,fig.height = 30,fig.width = 12}
+```{r,fig.height = 12,fig.width = 12}
 plotMF
 
 ```
@@ -4629,352 +4615,269 @@ plotMF
 dev.off()
 ```
 
+### Top1000_GO_enrichments_EnrichR
+This is the order of the tests:
 ```{r}
-#If various groupings for functional annotation
-groupsName<-"_Enrichr"
+# 1. Dynamically gather all your "GOlist" variables into a named list
+# This replaces your manual listAll definition
+target_vars <- ls(pattern = "^GOlist1000_")
+listAll <- mget(target_vars)
+names(listAll) <- gsub("GOlist1000_", "", target_vars) # Shortens names to just "TestA", "TestB", etc.
+lapply(listAll, head)
 ```
 
+
+This is the order of the databases for each test:
+
+- Reactome
+
+- KEGG_pathways
+
+- GO_Biological_Process
+
+- GO_Cellular_Component
+
+- GO_Molecular_Function
 ```{r}
-#Enrichr
-setEnrichrSite("Enrichr") # Human genes
+# 2. Setup
+path <- getwd()
+dir.create(file.path(path, "GO1000"), showWarnings = FALSE)
+groupsName <- "_Enrichr"
+dbs <- c("Reactome_Pathways_2024", "KEGG_2021_Human", "GO_Biological_Process_2025","GO_Cellular_Component_2025","GO_Molecular_Function_2025")
+db_titles <- c("Reactome", "KEGG_pathways", "GO_Biological_Process","GO_Cellular_Component","GO_Molecular_Function")
+
+setEnrichrSite("Enrichr")
+websiteLive <- !is.null(listEnrichrDbs())
 ```
+
+```{r, fig.height = 7, fig.width = 12}
+# 3. Process everything in one loop
+if (websiteLive) {
+  for (testName in names(listAll)) {
+    message(paste("Processing:", testName))
+    
+    # Run enrichment for the current list
+    enriched <- enrichr(listAll[[testName]], dbs)
+    
+    # Loop through the databases (1, 2, and 3)
+    for (i in seq_along(dbs)) {
+      current_db_name <- db_titles[i]
+      
+      # Generate Plot
+      print(plotEnrich(enriched[[i]], 
+                       showTerms = 30, numChar = 80, y = "Count", 
+                       orderBy = "P.value", 
+                       title = paste(testName,current_db_name)))
+      
+      # Save CSV
+      file_name <- paste0(path, "/GO1000/", testName, "_",current_db_name, "_",  groupsName, ".csv")
+      write.csv(head(enriched[[i]], 50), file_name, row.names = FALSE)
+    }
+  }
+}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### Top1000_Upstream_Regulator_EnrichR
+This is the order of the tests:
 ```{r}
-websiteLive <- TRUE
-dbs <- listEnrichrDbs()
-if (is.null(dbs)) websiteLive <- FALSE
-if (websiteLive) head(dbs)
+# 1. Dynamically gather all your "GOlist" variables into a named list
+# This replaces your manual listAll definition
+target_vars <- ls(pattern = "^GOlist1000_")
+listAll <- mget(target_vars)
+names(listAll) <- gsub("GOlist1000_", "", target_vars) # Shortens names to just "TestA", "TestB", etc.
+lapply(listAll, head)
 ```
 
-```{r,fig.height = 7,fig.width = 12}
-#dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", "GO_Biological_Process_2018")
+This is the order of the databases for each test:
+- ChEA_2022
+- TF_Perturbations_Followed_by_Expression
+- RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO
+- LINCS_L1000_CRISPR_KO_Consensus_Sigs
+```{r}
+# 2. Setup
+path <- getwd()
+dir.create(file.path(path, "GO1000"), showWarnings = FALSE)
+groupsName <- "_Enrichr"
+dbs <- c("ChEA_2022","TF_Perturbations_Followed_by_Expression", "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO", "LINCS_L1000_CRISPR_KO_Consensus_Sigs")
+db_titles <- c("ChEA_2022","TF_Perturbations_Followed_by_Expression", "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO", "LINCS_L1000_CRISPR_KO_Consensus_Sigs")
 
-
-dbs <- c("Reactome_Pathways_2024","Jensen_DISEASES_Curated_2025", "GO_Biological_Process_2025")
-#dbs <- c("Reactome_Pathways_2024","KEGG_2019_Mouse", "GO_Biological_Process_2025")
-
-if (websiteLive) {    enrichedA <- enrichr(GOlist1000_TestA, dbs)}
-if (websiteLive) plotEnrich(enrichedA[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis TestA")
-write.csv(head(enrichedA[[1]], 50),paste0(path,"/GO1000/","Reactome_Enrichment_Analysis_TestA",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedA[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis TestA")
-write.csv(head(enrichedA[[2]], 50),paste0(path,"/GO1000/","Jensen_DISEASES_Enrichment_Analysis_TestA",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedA[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis TestA")
-write.csv(head(enrichedA[[3]], 50),paste0(path,"/GO1000/","GO_BP_Enrichment_Analysis_TestA",groupsName,".csv"))
-
-if (websiteLive) {    enrichedB <- enrichr(GOlist1000_TestB, dbs)}
-if (websiteLive) plotEnrich(enrichedB[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis TestB")
-write.csv(head(enrichedB[[1]], 50),paste0(path,"/GO1000/","Reactome_Enrichment_Analysis_TestB",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedB[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis TestB")
-write.csv(head(enrichedB[[2]], 50),paste0(path,"/GO1000/","Jensen_DISEASES_Enrichment_Analysis_TestB",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedB[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis TestB")
-write.csv(head(enrichedB[[3]], 50),paste0(path,"/GO1000/","GO_BP_Enrichment_Analysis_TestB",groupsName,".csv"))
-
-if (websiteLive) {    enrichedC <- enrichr(GOlist1000_TestC, dbs)}
-if (websiteLive) plotEnrich(enrichedC[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis TestC")
-write.csv(head(enrichedC[[1]], 50),paste0(path,"/GO1000/","Reactome_Enrichment_Analysis_TestC",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedC[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis TestC")
-write.csv(head(enrichedC[[2]], 50),paste0(path,"/GO1000/","Jensen_DISEASES_Enrichment_Analysis_TestC",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedC[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis TestC")
-write.csv(head(enrichedC[[3]], 50),paste0(path,"/GO1000/","GO_BP_Enrichment_Analysis_TestC",groupsName,".csv"))
-
-if (websiteLive) {    enrichedD <- enrichr(GOlist1000_TestD, dbs)}
-if (websiteLive) plotEnrich(enrichedD[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis TestD")
-write.csv(head(enrichedD[[1]], 50),paste0(path,"/GO1000/","Reactome_Enrichment_Analysis_TestD",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis TestD")
-write.csv(head(enrichedD[[2]], 50),paste0(path,"/GO1000/","Jensen_DISEASES_Enrichment_Analysis_TestD",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis TestD")
-write.csv(head(enrichedD[[3]], 50),paste0(path,"/GO1000/","GO_BP_Enrichment_Analysis_TestD",groupsName,".csv"))
-
-if (websiteLive) {    enrichedE <- enrichr(GOlist1000_TestE, dbs)}
-if (websiteLive) plotEnrich(enrichedE[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis TestE")
-write.csv(head(enrichedE[[1]], 50),paste0(path,"/GO1000/","Reactome_Enrichment_Analysis_TestE",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedE[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis TestE")
-write.csv(head(enrichedE[[2]], 50),paste0(path,"/GO1000/","Jensen_DISEASES_Enrichment_Analysis_TestE",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedE[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis TestE")
-write.csv(head(enrichedE[[3]], 50),paste0(path,"/GO1000/","GO_BP_Enrichment_Analysis_TestE",groupsName,".csv"))
-
+setEnrichrSite("Enrichr")
+websiteLive <- !is.null(listEnrichrDbs())
 ```
 
-```{r,fig.height = 7,fig.width = 12}
-dbs <- c("CellMarker_2024","Descartes_Cell_Types_and_Tissue_2021", "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
-
-if (websiteLive) {    enrichedA <- enrichr(GOlist1000_TestA, dbs)}
-if (websiteLive) plotEnrich(enrichedA[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="CellMarker_2024 Enrichment Analysis TestA")
-write.csv(head(enrichedA[[1]], 50),paste0(path,"/GO1000/","CellMarker_2024_Enrichment_Analysis_TestA",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedA[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Descartes_Cell_Types_and_Tissue_2021 Enrichment Analysis TestA")
-write.csv(head(enrichedA[[2]], 50),paste0(path,"/GO1000/","Descartes_Cell_Types_and_Tissue_2021_Enrichment_Analysis_TestA",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedA[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO Enrichment Analysis TestA")
-write.csv(head(enrichedA[[3]], 50),paste0(path,"/GO1000/","RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO_Enrichment_Analysis_TestA",groupsName,".csv"))
-
-if (websiteLive) {    enrichedB <- enrichr(GOlist1000_TestB, dbs)}
-if (websiteLive) plotEnrich(enrichedB[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="CellMarker_2024 Enrichment Analysis TestB")
-write.csv(head(enrichedB[[1]], 50),paste0(path,"/GO1000/","CellMarker_2024_Enrichment_Analysis_TestB",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedB[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Descartes_Cell_Types_and_Tissue_2021 Enrichment Analysis TestB")
-write.csv(head(enrichedB[[2]], 50),paste0(path,"/GO1000/","Descartes_Cell_Types_and_Tissue_2021_Enrichment_Analysis_TestB",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedB[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO Enrichment Analysis TestB")
-write.csv(head(enrichedB[[3]], 50),paste0(path,"/GO1000/","RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO_Enrichment_Analysis_TestB",groupsName,".csv"))
-
-if (websiteLive) {    enrichedC <- enrichr(GOlist1000_TestC, dbs)}
-if (websiteLive) plotEnrich(enrichedC[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="CellMarker_2024 Enrichment Analysis TestC")
-write.csv(head(enrichedC[[1]], 50),paste0(path,"/GO1000/","CellMarker_2024_Enrichment_Analysis_TestC",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedC[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Descartes_Cell_Types_and_Tissue_2021 Enrichment Analysis TestC")
-write.csv(head(enrichedC[[2]], 50),paste0(path,"/GO1000/","Descartes_Cell_Types_and_Tissue_2021_Enrichment_Analysis_TestC",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedC[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO Enrichment Analysis TestC")
-write.csv(head(enrichedC[[3]], 50),paste0(path,"/GO1000/","RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO_Enrichment_Analysis_TestC",groupsName,".csv"))
-
-if (websiteLive) {    enrichedD <- enrichr(GOlist1000_TestD, dbs)}
-if (websiteLive) plotEnrich(enrichedD[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="CellMarker_2024 Enrichment Analysis TestD")
-write.csv(head(enrichedD[[1]], 50),paste0(path,"/GO1000/","CellMarker_2024_Enrichment_Analysis_TestD",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Descartes_Cell_Types_and_Tissue_2021 Enrichment Analysis TestD")
-write.csv(head(enrichedD[[2]], 50),paste0(path,"/GO1000/","Descartes_Cell_Types_and_Tissue_2021_Enrichment_Analysis_TestD",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO Enrichment Analysis TestD")
-write.csv(head(enrichedD[[3]], 50),paste0(path,"/GO1000/","RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO_Enrichment_Analysis_TestD",groupsName,".csv"))
-
-if (websiteLive) {    enrichedD <- enrichr(GOlist1000_TestE, dbs)}
-if (websiteLive) plotEnrich(enrichedD[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="CellMarker_2024 Enrichment Analysis TestE")
-write.csv(head(enrichedD[[1]], 50),paste0(path,"/GO1000/","CellMarker_2024_Enrichment_Analysis_TestE",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Descartes_Cell_Types_and_Tissue_2021 Enrichment Analysis TestE")
-write.csv(head(enrichedD[[2]], 50),paste0(path,"/GO1000/","Descartes_Cell_Types_and_Tissue_2021_Enrichment_Analysis_TestE",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO Enrichment Analysis TestE")
-write.csv(head(enrichedD[[3]], 50),paste0(path,"/GO1000/","RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO_Enrichment_Analysis_TestE",groupsName,".csv"))
+```{r, fig.height = 7, fig.width = 12}
+# 3. Process everything in one loop
+if (websiteLive) {
+  for (testName in names(listAll)) {
+    message(paste("Processing:", testName))
+    
+    # Run enrichment for the current list
+    enriched <- enrichr(listAll[[testName]], dbs)
+    
+    # Loop through the databases (1, 2, and 3)
+    for (i in seq_along(dbs)) {
+      current_db_name <- db_titles[i]
+      
+      # Generate Plot
+      print(plotEnrich(enriched[[i]], 
+                       showTerms = 30, numChar = 80, y = "Count", 
+                       orderBy = "P.value", 
+                       title = paste(testName,current_db_name)))
+      
+      # Save CSV
+      file_name <- paste0(path, "/GO1000/",  testName, "_",current_db_name, "_",  groupsName, ".csv")
+      write.csv(head(enriched[[i]], 50), file_name, row.names = FALSE)
+    }
+  }
+}
 ```
 
-```{r,fig.height = 7,fig.width = 12}
-#Rare Diseases
+### Top1000_Cell_Types_EnrichR
+This is the order of the tests:
+```{r}
+# 1. Dynamically gather all your "GOlist" variables into a named list
+# This replaces your manual listAll definition
+target_vars <- ls(pattern = "^GOlist1000_")
+listAll <- mget(target_vars)
+names(listAll) <- gsub("GOlist1000_", "", target_vars) # Shortens names to just "TestA", "TestB", etc.
+lapply(listAll, head)
+```
+
+This is the order of the databases for each test:
+- CellMarker_2024
+- Descartes_Cell_Types_and_Tissue_2021
+- Human_Gene_Atlas
+```{r}
+# 2. Setup
+path <- getwd()
+dir.create(file.path(path, "GO1000"), showWarnings = FALSE)
+groupsName <- "_Enrichr"
+dbs <- c("CellMarker_2024","Descartes_Cell_Types_and_Tissue_2021", "Human_Gene_Atlas")
+db_titles <- c("CellMarker_2024","Descartes_Cell_Types_and_Tissue_2021", "Human_Gene_Atlas")
+
+setEnrichrSite("Enrichr")
+websiteLive <- !is.null(listEnrichrDbs())
+```
+
+```{r, fig.height = 7, fig.width = 12}
+# 3. Process everything in one loop
+if (websiteLive) {
+  for (testName in names(listAll)) {
+    message(paste("Processing:", testName))
+    
+    # Run enrichment for the current list
+    enriched <- enrichr(listAll[[testName]], dbs)
+    
+    # Loop through the databases (1, 2, and 3)
+    for (i in seq_along(dbs)) {
+      current_db_name <- db_titles[i]
+      
+      # Generate Plot
+      print(plotEnrich(enriched[[i]], 
+                       showTerms = 30, numChar = 80, y = "Count", 
+                       orderBy = "P.value", 
+                       title = paste(testName,current_db_name)))
+      
+      # Save CSV
+      file_name <- paste0(path, "/GO1000/",  testName, "_",current_db_name, "_",  groupsName, ".csv")
+      write.csv(head(enriched[[i]], 50), file_name, row.names = FALSE)
+    }
+  }
+}
+```
+
+
+
+### Top1000_Rare_Diseases_EnrichR
+This is the order of the tests:
+```{r}
+# 1. Dynamically gather all your "GOlist" variables into a named list
+# This replaces your manual listAll definition
+target_vars <- ls(pattern = "^GOlist1000_")
+listAll <- mget(target_vars)
+names(listAll) <- gsub("GOlist1000_", "", target_vars) # Shortens names to just "TestA", "TestB", etc.
+lapply(listAll, head)
+```
+
+This is the order of the databases for each test:
+- Rare_Diseases_GeneRIF_ARCHS4_Predictions
+- Rare_Diseases_GeneRIF_Gene_Lists
+- Rare_Diseases_AutoRIF_ARCHS4_Predictions
+- Rare_Diseases_AutoRIF_Gene_Lists
+```{r}
+# 2. Setup
+path <- getwd()
+dir.create(file.path(path, "GO1000"), showWarnings = FALSE)
+groupsName <- "_Enrichr"
 dbs <- c("Rare_Diseases_GeneRIF_ARCHS4_Predictions","Rare_Diseases_GeneRIF_Gene_Lists", "Rare_Diseases_AutoRIF_ARCHS4_Predictions", "Rare_Diseases_AutoRIF_Gene_Lists")
+db_titles <- c("Rare_Diseases_GeneRIF_ARCHS4_Predictions","Rare_Diseases_GeneRIF_Gene_Lists", "Rare_Diseases_AutoRIF_ARCHS4_Predictions", "Rare_Diseases_AutoRIF_Gene_Lists")
 
-
-if (websiteLive) {    enrichedA <- enrichr(GOlist1000_TestA, dbs)}
-if (websiteLive) plotEnrich(enrichedA[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_ARCHS4_Predictions Enrichment Analysis TestA")
-write.csv(head(enrichedA[[1]], 50),paste0(path,"/GO1000/","Rare_Diseases_GeneRIF_ARCHS4_Predictions_Enrichment_Analysis_TestA",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedA[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_Gene_Lists Enrichment Analysis TestA")
-write.csv(head(enrichedA[[2]], 50),paste0(path,"/GO1000/","Rare_Diseases_GeneRIF_Gene_Lists_Enrichment_Analysis_TestA",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedA[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_ARCHS4_Predictions Enrichment Analysis TestA")
-write.csv(head(enrichedA[[3]], 50),paste0(path,"/GO1000/","Rare_Diseases_AutoRIF_ARCHS4_Predictions_Enrichment_Analysis_TestA",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedA[[4]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_Gene_Lists Enrichment Analysis TestA")
-write.csv(head(enrichedA[[4]], 50),paste0(path,"/GO1000/","Rare_Diseases_AutoRIF_Gene_Lists_Enrichment_Analysis_TestA",groupsName,".csv"))
-
-if (websiteLive) {    enrichedB <- enrichr(GOlist1000_TestB, dbs)}
-if (websiteLive) plotEnrich(enrichedB[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_ARCHS4_Predictions Enrichment Analysis TestB")
-write.csv(head(enrichedB[[1]], 50),paste0(path,"/GO1000/","Rare_Diseases_GeneRIF_ARCHS4_Predictions_Enrichment_Analysis_TestB",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedB[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_Gene_Lists Enrichment Analysis TestB")
-write.csv(head(enrichedB[[2]], 50),paste0(path,"/GO1000/","Rare_Diseases_GeneRIF_Gene_Lists_Enrichment_Analysis_TestB",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedB[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_ARCHS4_Predictions Enrichment Analysis TestB")
-write.csv(head(enrichedB[[3]], 50),paste0(path,"/GO1000/","Rare_Diseases_AutoRIF_ARCHS4_Predictions_Enrichment_Analysis_TestB",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedB[[4]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_Gene_Lists Enrichment Analysis TestB")
-write.csv(head(enrichedB[[4]], 50),paste0(path,"/GO1000/","Rare_Diseases_AutoRIF_Gene_Lists_Enrichment_Analysis_TestB",groupsName,".csv"))
-
-if (websiteLive) {    enrichedC <- enrichr(GOlist1000_TestC, dbs)}
-if (websiteLive) plotEnrich(enrichedC[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_ARCHS4_Predictions Enrichment Analysis TestC")
-write.csv(head(enrichedC[[1]], 50),paste0(path,"/GO1000/","Rare_Diseases_GeneRIF_ARCHS4_Predictions_Enrichment_Analysis_TestC",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedC[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_Gene_Lists Enrichment Analysis TestC")
-write.csv(head(enrichedC[[2]], 50),paste0(path,"/GO1000/","Rare_Diseases_GeneRIF_Gene_Lists_Enrichment_Analysis_TestC",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedC[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_ARCHS4_Predictions Enrichment Analysis TestC")
-write.csv(head(enrichedC[[3]], 50),paste0(path,"/GO1000/","Rare_Diseases_AutoRIF_ARCHS4_Predictions_Enrichment_Analysis_TestC",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedC[[4]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_Gene_Lists Enrichment Analysis TestC")
-write.csv(head(enrichedC[[4]], 50),paste0(path,"/GO1000/","Rare_Diseases_AutoRIF_Gene_Lists_Enrichment_Analysis_TestC",groupsName,".csv"))
-
-if (websiteLive) {    enrichedD <- enrichr(GOlist1000_TestD, dbs)}
-if (websiteLive) plotEnrich(enrichedD[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_ARCHS4_Predictions Enrichment Analysis TestD")
-write.csv(head(enrichedD[[1]], 50),paste0(path,"/GO1000/","Rare_Diseases_GeneRIF_ARCHS4_Predictions_Enrichment_Analysis_TestD",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_Gene_Lists Enrichment Analysis TestD")
-write.csv(head(enrichedD[[2]], 50),paste0(path,"/GO1000/","Rare_Diseases_GeneRIF_Gene_Lists_Enrichment_Analysis_TestD",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_ARCHS4_Predictions Enrichment Analysis TestD")
-write.csv(head(enrichedD[[3]], 50),paste0(path,"/GO1000/","Rare_Diseases_AutoRIF_ARCHS4_Predictions_Enrichment_Analysis_TestD",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[4]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_Gene_Lists Enrichment Analysis TestD")
-write.csv(head(enrichedD[[4]], 50),paste0(path,"/GO1000/","Rare_Diseases_AutoRIF_Gene_Lists_Enrichment_Analysis_TestD",groupsName,".csv"))
-
-if (websiteLive) {    enrichedD <- enrichr(GOlist1000_TestE, dbs)}
-if (websiteLive) plotEnrich(enrichedD[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_ARCHS4_Predictions Enrichment Analysis TestE")
-write.csv(head(enrichedD[[1]], 50),paste0(path,"/GO1000/","Rare_Diseases_GeneRIF_ARCHS4_Predictions_Enrichment_Analysis_TestE",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_Gene_Lists Enrichment Analysis TestE")
-write.csv(head(enrichedD[[2]], 50),paste0(path,"/GO1000/","Rare_Diseases_GeneRIF_Gene_Lists_Enrichment_Analysis_TestE",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_ARCHS4_Predictions Enrichment Analysis TestE")
-write.csv(head(enrichedD[[3]], 50),paste0(path,"/GO1000/","Rare_Diseases_AutoRIF_ARCHS4_Predictions_Enrichment_Analysis_TestE",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[4]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_Gene_Lists Enrichment Analysis TestE")
-write.csv(head(enrichedD[[4]], 50),paste0(path,"/GO1000/","Rare_Diseases_AutoRIF_Gene_Lists_Enrichment_Analysis_TestE",groupsName,".csv"))
-
+setEnrichrSite("Enrichr")
+websiteLive <- !is.null(listEnrichrDbs())
 ```
 
-```{r,fig.height = 7,fig.width = 12}
-
-#if (websiteLive) {    enrichedF <- enrichr(GOlist1000_TestF, dbs)}
-#if (websiteLive) plotEnrich(enrichedF[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis TestF")
-#write.csv(head(enrichedF[[1]], 50),paste0(path,"/GO1000/","Reactome_Enrichment_Analysis_TestF",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedF[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis TestF")
-#write.csv(head(enrichedF[[2]], 50),paste0(path,"/GO1000/","Jensen_DISEASES_Enrichment_Analysis_TestF",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedF[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis TestF")
-#write.csv(head(enrichedF[[3]], 50),paste0(path,"/GO1000/","GO_BP_Enrichment_Analysis_TestF",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedG <- enrichr(GOlist1000_TestG, dbs)}
-#if (websiteLive) plotEnrich(enrichedG[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis TestG")
-#write.csv(head(enrichedG[[1]], 50),paste0(path,"/GO1000/","Reactome_Enrichment_Analysis_TestG",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedG[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis TestG")
-#write.csv(head(enrichedG[[2]], 50),paste0(path,"/GO1000/","Jensen_DISEASES_Enrichment_Analysis_TestG",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedG[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis TestG")
-#write.csv(head(enrichedG[[3]], 50),paste0(path,"/GO1000/","GO_BP_Enrichment_Analysis_TestG",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedH <- enrichr(GOlist1000_TestH, dbs)}
-#if (websiteLive) plotEnrich(enrichedH[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis TestH")
-#write.csv(head(enrichedH[[1]], 50),paste0(path,"/GO1000/","Reactome_Enrichment_Analysis_TestH",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedH[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis TestH")
-#write.csv(head(enrichedH[[2]], 50),paste0(path,"/GO1000/","Jensen_DISEASES_Enrichment_Analysis_TestH",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedH[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis TestH")
-#write.csv(head(enrichedH[[3]], 50),paste0(path,"/GO1000/","GO_BP_Enrichment_Analysis_TestH",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedI <- enrichr(GOlist1000_TestI, dbs)}
-#if (websiteLive) plotEnrich(enrichedI[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis TestI")
-#write.csv(head(enrichedI[[1]], 50),paste0(path,"/GO1000/","Reactome_Enrichment_Analysis_TestI",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedI[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis TestI")
-#write.csv(head(enrichedI[[2]], 50),paste0(path,"/GO1000/","Jensen_DISEASES_Enrichment_Analysis_TestI",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedI[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis TestI")
-#write.csv(head(enrichedI[[3]], 50),paste0(path,"/GO1000/","GO_BP_Enrichment_Analysis_TestI",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedJ <- enrichr(GOlist1000_TestJ, dbs)}
-#if (websiteLive) plotEnrich(enrichedJ[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis TestJ")
-#write.csv(head(enrichedJ[[1]], 50),paste0(path,"/GO1000/","Reactome_Enrichment_Analysis_TestJ",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedJ[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis TestJ")
-#write.csv(head(enrichedJ[[2]], 50),paste0(path,"/GO1000/","Jensen_DISEASES_Enrichment_Analysis_TestJ",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedJ[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis TestJ")
-#write.csv(head(enrichedJ[[3]], 50),paste0(path,"/GO1000/","GO_BP_Enrichment_Analysis_TestJ",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedK <- enrichr(GOlist1000_TestK, dbs)}
-#if (websiteLive) plotEnrich(enrichedK[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis TestK")
-#write.csv(head(enrichedK[[1]], 50),paste0(path,"/GO1000/","Reactome_Enrichment_Analysis_TestK",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedK[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis TestK")
-#write.csv(head(enrichedK[[2]], 50),paste0(path,"/GO1000/","Jensen_DISEASES_Enrichment_Analysis_TestK",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedK[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis TestK")
-#write.csv(head(enrichedK[[3]], 50),paste0(path,"/GO1000/","GO_BP_Enrichment_Analysis_TestK",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedL <- enrichr(GOlist1000_TestL, dbs)}
-#if (websiteLive) plotEnrich(enrichedL[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis TestL")
-#write.csv(head(enrichedL[[1]], 50),paste0(path,"/GO1000/","Reactome_Enrichment_Analysis_TestL",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedL[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis TestL")
-#write.csv(head(enrichedL[[2]], 50),paste0(path,"/GO1000/","Jensen_DISEASES_Enrichment_Analysis_TestL",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedL[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis TestL")
-#write.csv(head(enrichedL[[3]], 50),paste0(path,"/GO1000/","GO_BP_Enrichment_Analysis_TestL",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedM <- enrichr(GOlist1000_TestM, dbs)}
-#if (websiteLive) plotEnrich(enrichedM[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis TestM")
-#write.csv(head(enrichedM[[1]], 50),paste0(path,"/GO1000/","Reactome_Enrichment_Analysis_TestM",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedM[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis TestM")
-#write.csv(head(enrichedM[[2]], 50),paste0(path,"/GO1000/","Jensen_DISEASES_Enrichment_Analysis_TestM",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedM[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis TestM")
-#write.csv(head(enrichedM[[3]], 50),paste0(path,"/GO1000/","GO_BP_Enrichment_Analysis_TestM",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedN <- enrichr(GOlist1000_TestN, dbs)}
-#if (websiteLive) plotEnrich(enrichedN[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis TestN")
-#write.csv(head(enrichedN[[1]], 50),paste0(path,"/GO1000/","Reactome_Enrichment_Analysis_TestN",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedN[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis TestN")
-#write.csv(head(enrichedN[[2]], 50),paste0(path,"/GO1000/","Jensen_DISEASES_Enrichment_Analysis_TestN",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedN[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis TestN")
-#write.csv(head(enrichedN[[3]], 50),paste0(path,"/GO1000/","GO_BP_Enrichment_Analysis_TestN",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedO <- enrichr(GOlist1000_TestO, dbs)}
-#if (websiteLive) plotEnrich(enrichedO[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis TestO")
-#write.csv(head(enrichedO[[1]], 50),paste0(path,"/GO1000/","Reactome_Enrichment_Analysis_TestO",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedO[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis TestO")
-#write.csv(head(enrichedO[[2]], 50),paste0(path,"/GO1000/","Jensen_DISEASES_Enrichment_Analysis_TestO",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedO[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis TestO")
-#write.csv(head(enrichedO[[3]], 50),paste0(path,"/GO1000/","GO_BP_Enrichment_Analysis_TestO",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedP <- enrichr(GOlist1000_TestP, dbs)}
-#if (websiteLive) plotEnrich(enrichedP[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis TestP")
-#write.csv(head(enrichedP[[1]], 50),paste0(path,"/GO1000/","Reactome_Enrichment_Analysis_TestP",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedP[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis TestP")
-#write.csv(head(enrichedP[[2]], 50),paste0(path,"/GO1000/","Jensen_DISEASES_Enrichment_Analysis_TestP",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedP[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis TestP")
-#write.csv(head(enrichedP[[3]], 50),paste0(path,"/GO1000/","GO_BP_Enrichment_Analysis_TestP",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedQ <- enrichr(GOlist1000_TestQ, dbs)}
-#if (websiteLive) plotEnrich(enrichedQ[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis TestQ")
-#write.csv(head(enrichedQ[[1]], 50),paste0(path,"/GO1000/","Reactome_Enrichment_Analysis_TestQ",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedQ[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis TestQ")
-#write.csv(head(enrichedQ[[2]], 50),paste0(path,"/GO1000/","Jensen_DISEASES_Enrichment_Analysis_TestQ",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedQ[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis TestQ")
-#write.csv(head(enrichedQ[[3]], 50),paste0(path,"/GO1000/","GO_BP_Enrichment_Analysis_TestQ",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedR <- enrichr(GOlist1000_TestR, dbs)}
-#if (websiteLive) plotEnrich(enrichedR[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis TestR")
-#write.csv(head(enrichedR[[1]], 50),paste0(path,"/GO1000/","Reactome_Enrichment_Analysis_TestR",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedR[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis TestR")
-#write.csv(head(enrichedR[[2]], 50),paste0(path,"/GO1000/","Jensen_DISEASES_Enrichment_Analysis_TestR",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedR[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis TestR")
-#write.csv(head(enrichedR[[3]], 50),paste0(path,"/GO1000/","GO_BP_Enrichment_Analysis_TestR",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedS <- enrichr(GOlist1000_TestS, dbs)}
-#if (websiteLive) plotEnrich(enrichedS[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis TestS")
-#write.csv(head(enrichedS[[1]], 50),paste0(path,"/GO1000/","Reactome_Enrichment_Analysis_TestS",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedS[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis TestS")
-#write.csv(head(enrichedS[[2]], 50),paste0(path,"/GO1000/","Jensen_DISEASES_Enrichment_Analysis_TestS",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedS[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis TestS")
-#write.csv(head(enrichedS[[3]], 50),paste0(path,"/GO1000/","GO_BP_Enrichment_Analysis_TestS",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedT <- enrichr(GOlist1000_TestT, dbs)}
-#if (websiteLive) plotEnrich(enrichedT[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis TestT")
-#write.csv(head(enrichedT[[1]], 50),paste0(path,"/GO1000/","Reactome_Enrichment_Analysis_TestT",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedT[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis TestT")
-#write.csv(head(enrichedT[[2]], 50),paste0(path,"/GO1000/","Jensen_DISEASES_Enrichment_Analysis_TestT",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedT[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis TestT")
-#write.csv(head(enrichedT[[3]], 50),paste0(path,"/GO1000/","GO_BP_Enrichment_Analysis_TestT",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedU <- enrichr(GOlist1000_TestU, dbs)}
-#if (websiteLive) plotEnrich(enrichedU[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis TestU")
-#write.csv(head(enrichedU[[1]], 50),paste0(path,"/GO1000/","Reactome_Enrichment_Analysis_TestU",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedU[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis TestU")
-#write.csv(head(enrichedU[[2]], 50),paste0(path,"/GO1000/","Jensen_DISEASES_Enrichment_Analysis_TestU",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedU[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis TestU")
-#write.csv(head(enrichedU[[3]], 50),paste0(path,"/GO1000/","GO_BP_Enrichment_Analysis_TestU",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedV <- enrichr(GOlist1000_TestV, dbs)}
-#if (websiteLive) plotEnrich(enrichedV[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis TestV")
-#write.csv(head(enrichedV[[1]], 50),paste0(path,"/GO1000/","Reactome_Enrichment_Analysis_TestV",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedV[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis TestV")
-#write.csv(head(enrichedV[[2]], 50),paste0(path,"/GO1000/","Jensen_DISEASES_Enrichment_Analysis_TestV",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedV[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis TestV")
-#write.csv(head(enrichedV[[3]], 50),paste0(path,"/GO1000/","GO_BP_Enrichment_Analysis_TestV",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedV <- enrichr(GOlist1000_TestW, dbs)}
-#if (websiteLive) plotEnrich(enrichedV[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis TestW")
-#write.csv(head(enrichedV[[1]], 50),paste0(path,"/GO1000/","Reactome_Enrichment_Analysis_TestW",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedV[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis TestW")
-#write.csv(head(enrichedV[[2]], 50),paste0(path,"/GO1000/","Jensen_DISEASES_Enrichment_Analysis_TestW",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedV[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis TestW")
-#write.csv(head(enrichedV[[3]], 50),paste0(path,"/GO1000/","GO_BP_Enrichment_Analysis_TestW",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedX <- enrichr(GOlist1000_TestX, dbs)}
-#if (websiteLive) plotEnrich(enrichedX[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis TestX")
-#write.csv(head(enrichedX[[1]], 50),paste0(path,"/GO1000/","Reactome_Enrichment_Analysis_TestX",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedX[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis TestX")
-#write.csv(head(enrichedX[[2]], 50),paste0(path,"/GO1000/","Jensen_DISEASES_Enrichment_Analysis_TestX",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedX[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis TestX")
-#write.csv(head(enrichedX[[3]], 50),paste0(path,"/GO1000/","GO_BP_Enrichment_Analysis_TestX",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedY <- enrichr(GOlist1000_TestY, dbs)}
-#if (websiteLive) plotEnrich(enrichedY[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis TestY")
-#write.csv(head(enrichedY[[1]], 50),paste0(path,"/GO1000/","Reactome_Enrichment_Analysis_TestY",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedY[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis TestY")
-#write.csv(head(enrichedY[[2]], 50),paste0(path,"/GO1000/","Jensen_DISEASES_Enrichment_Analysis_TestY",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedY[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis TestY")
-#write.csv(head(enrichedY[[3]], 50),paste0(path,"/GO1000/","GO_BP_Enrichment_Analysis_TestY",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedZ <- enrichr(GOlist1000_TestZ, dbs)}
-#if (websiteLive) plotEnrich(enrichedZ[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis TestZ")
-#write.csv(head(enrichedZ[[1]], 50),paste0(path,"/GO1000/","Reactome_Enrichment_Analysis_TestZ",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedZ[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis TestZ")
-#write.csv(head(enrichedZ[[2]], 50),paste0(path,"/GO1000/","Jensen_DISEASES_Enrichment_Analysis_TestZ",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedZ[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis TestZ")
-#write.csv(head(enrichedZ[[3]], 50),paste0(path,"/GO1000/","GO_BP_Enrichment_Analysis_TestZ",groupsName,".csv"))
-
+```{r, fig.height = 7, fig.width = 12}
+# 3. Process everything in one loop
+if (websiteLive) {
+  for (testName in names(listAll)) {
+    message(paste("Processing:", testName))
+    
+    # Run enrichment for the current list
+    enriched <- enrichr(listAll[[testName]], dbs)
+    
+    # Loop through the databases (1, 2, and 3)
+    for (i in seq_along(dbs)) {
+      current_db_name <- db_titles[i]
+      
+      # Generate Plot
+      print(plotEnrich(enriched[[i]], 
+                       showTerms = 30, numChar = 80, y = "Count", 
+                       orderBy = "P.value", 
+                       title = paste(testName,current_db_name)))
+      
+      # Save CSV
+      file_name <- paste0(path, "/GO1000/",  testName, "_",current_db_name, "_",  groupsName, ".csv")
+      write.csv(head(enriched[[i]], 50), file_name, row.names = FALSE)
+    }
+  }
+}
 ```
 
-### GO_enrichments_padjLOGFC
 
-Functional Annotation
+### padjLOGFC_GO_enrichments_clusterProfiler
+Functional Annotation on Genelists selected by padj<0.1 logfc>1 using clusterprofiler. 
 ```{r}
 #If various groupings for functional annotation
 groupsName<-"_clusterProfiler"
 ```
-
 
 ```{r}
 path<-getwd()
@@ -4982,48 +4885,28 @@ dir.create(paste0(path,"/GOpadjLOGFC"))
 write.csv((DEcounter),paste0(path,"/GOpadjLOGFC/","DEcounts.csv"))
 ```
 
-Functional Annotation on top 1000 Genes using clusterprofiler. GO Analysis 
-
-
-
-
-
 ```{r}
 #Vector containing all Sample_group names for GO analysis
 #AllGeneNames<-row.names(read.delim("RNAseqJune2020_reanalysis_dupRemovedISGs_2Sym.txt", header = TRUE, sep = "\t",check.names=FALSE,row.names=1))
 AllGeneNames<-BMannot$Gene_Symbol
 ```
 
-
+This is the order of the tests:
 ```{r}
-
-listAll<-list(GOlistUp_TestA,GOlistDown_TestA,GOlistUp_TestB,GOlistDown_TestB,GOlistUp_TestC,GOlistDown_TestC,GOlistUp_TestD,GOlistDown_TestD,GOlistUp_TestE,GOlistDown_TestE)
-#need to name the vectors in the list, example here is for 5 groups
-names(listAll)<-c("TestA_UP", "TestA_Down","TestB_UP","TestB_Down", "TestC_UP","TestC_Down", "TestD_UP","TestD_Down", "TestE_UP","TestE_Down")#make sure order the same as above!!!
-
-#listAll<-list(GOlistUp_TestA,GOlistDown_TestA,GOlistUp_TestB,GOlistDown_TestB,GOlistUp_TestC,GOlistDown_TestC,GOlistUp_TestD,GOlistDown_TestD,GOlistUp_TestE,GOlistDown_TestE,GOlistUp_TestF,GOlistDown_TestF,GOlistUp_TestG,GOlistDown_TestG,GOlistUp_TestH,GOlistDown_TestH,GOlistUp_TestI,GOlistDown_TestI,GOlistUp_TestJ,GOlistDown_TestJ,GOlistUp_TestK,GOlistDown_TestK,GOlistUp_TestL,GOlistDown_TestL,GOlistUp_TestM,GOlistDown_TestM,GOlistUp_TestN,GOlistDown_TestN,GOlistUp_TestO,GOlistDown_TestO,GOlistUp_TestP,GOlistDown_TestP,GOlistUp_TestQ,GOlistDown_TestQ,GOlistUp_TestR,GOlistDown_TestR,GOlistUp_TestS,GOlistDown_TestS,GOlistUp_TestT,GOlistDown_TestT,GOlistUp_TestU,GOlistDown_TestU,GOlistUp_TestV,GOlistDown_TestV,GOlistUp_TestW,GOlistDown_TestW,GOlistUp_TestX,GOlistDown_TestX,GOlistUp_TestY,GOlistDown_TestY,GOlistUp_TestZ,GOlistDown_TestZ)
-#need to name the vectors in the list, example here is for 5 groups
-#names(listAll)<-c("TestA_UP", "TestA_Down","TestB_UP","TestB_Down", "TestC_UP","TestC_Down", "TestD_UP","TestD_Down", "TestE_UP","TestE_Down", "TestF_UP","TestF_Down", "TestG_UP","TestG_Down", "TestH_UP","TestH_Down", "TestI_UP","TestI_Down", "TestJ_UP","TestJ_Down", "TestK_UP","TestK_Down", "TestL_UP","TestL_Down", "TestM_UP","TestM_Down", "TestN_UP","TestN_Down", "TestO_UP","TestO_Down", "TestP_UP","TestP_Down", "TestQ_UP","TestQ_Down", "TestR_UP","TestR_Down", "TestS_UP","TestS_Down", "TestT_UP","TestT_Down", "TestU_UP","TestU_Down", "TestV_UP","TestV_Down", "TestW_UP","TestW_Down", "TestX_UP","TestX_Down", "TestY_UP","TestY_Down", "TestZ_UP","TestZ_Down")#make sure order the same as above!!!
-
-#if you want to rearrange the order
-#listAll<-listAll[c("x3", "x7", "x8", "x2", "x6", "x5", "x4", "x1")]
-
+# 1. Dynamically gather all your "GOlist" variables into a named list
+target_vars <- ls(pattern = "^GOlist_")
+listAll <- mget(target_vars)
+names(listAll) <- gsub("GOlist_", "", target_vars) # Shortens names to just "TestA", "TestB", etc.
 lapply(listAll, head)
-
 ```
 
 ```{r}
-
-listAllR<-list(ReactomeUplist_TestA,ReactomeDownlist_TestA,ReactomeUplist_TestB,ReactomeDownlist_TestB,ReactomeUplist_TestC,ReactomeDownlist_TestC,ReactomeUplist_TestD,ReactomeDownlist_TestD,ReactomeUplist_TestE,ReactomeDownlist_TestE)
-#need to name the vectors in the list, example here is for 5 groups
-names(listAllR)<-c("TestA_UP", "TestA_Down","TestB_UP","TestB_Down", "TestC_UP","TestC_Down", "TestD_UP","TestD_Down", "TestE_UP","TestE_Down")#make sure order the same as above!!!
-
-#listAllR<-list(ReactomeUplist_TestA,ReactomeDownlist_TestA,ReactomeUplist_TestB,ReactomeDownlist_TestB,ReactomeUplist_TestC,ReactomeDownlist_TestC,ReactomeUplist_TestD,ReactomeDownlist_TestD,ReactomeUplist_TestE,ReactomeDownlist_TestE,ReactomeUplist_TestF,ReactomeDownlist_TestF,ReactomeUplist_TestG,ReactomeDownlist_TestG,ReactomeUplist_TestH,ReactomeDownlist_TestH,ReactomeUplist_TestI,ReactomeDownlist_TestI,ReactomeUplist_TestJ,ReactomeDownlist_TestJ,ReactomeUplist_TestK,ReactomeDownlist_TestK,ReactomeUplist_TestL,ReactomeDownlist_TestL,ReactomeUplist_TestM,ReactomeDownlist_TestM,ReactomeUplist_TestN,ReactomeDownlist_TestN,ReactomeUplist_TestO,ReactomeDownlist_TestO,ReactomeUplist_TestP,ReactomeDownlist_TestP,ReactomeUplist_TestQ,ReactomeDownlist_TestQ,ReactomeUplist_TestR,ReactomeDownlist_TestR,ReactomeUplist_TestS,ReactomeDownlist_TestS,ReactomeUplist_TestT,ReactomeDownlist_TestT,ReactomeUplist_TestU,ReactomeDownlist_TestU,ReactomeUplist_TestV,ReactomeDownlist_TestV,ReactomeUplist_TestW,ReactomeDownlist_TestW,ReactomeUplist_TestX,ReactomeDownlist_TestX,ReactomeUplist_TestY,ReactomeDownlist_TestY,ReactomeUplist_TestZ,ReactomeDownlist_TestZ)
-#names(listAll)<-c("TestA_UP", "TestA_Down","TestB_UP","TestB_Down", "TestC_UP","TestC_Down", "TestD_UP","TestD_Down", "TestE_UP","TestE_Down", "TestF_UP","TestF_Down", "TestG_UP","TestG_Down", "TestH_UP","TestH_Down", "TestI_UP","TestI_Down", "TestJ_UP","TestJ_Down", "TestK_UP","TestK_Down", "TestL_UP","TestL_Down", "TestM_UP","TestM_Down", "TestN_UP","TestN_Down", "TestO_UP","TestO_Down", "TestP_UP","TestP_Down", "TestQ_UP","TestQ_Down", "TestR_UP","TestR_Down", "TestS_UP","TestS_Down", "TestT_UP","TestT_Down", "TestU_UP","TestU_Down", "TestV_UP","TestV_Down", "TestW_UP","TestW_Down", "TestX_UP","TestX_Down", "TestY_UP","TestY_Down", "TestZ_UP","TestZ_Down")#make sure order the same as above!!!
-
-
+# 1. Dynamically gather all your "ReactomeList" variables into a named list
+# This replaces your manual listAll definition
+target_vars <- ls(pattern = "^ReactomeList_")
+listAllR <- mget(target_vars)
+names(listAllR) <- gsub("ReactomeList_", "", target_vars) # Shortens names to just "TestA", "TestB", etc.
 lapply(listAllR, head)
-
 ```
 
 ```{r}
@@ -5033,7 +4916,7 @@ res <- compareCluster(listAllR, fun="enrichPathway",universe = BMannot$entrez,
                    qvalueCutoff = 0.10,
                    readable=T)
 
-head(res)
+#head(res)
 write.csv(as.data.frame(res),paste0(path,"/GOpadjLOGFC/","Reactome",groupsName,".csv"))
 ```
 
@@ -5052,12 +4935,9 @@ plotR
 dev.off()
 ```
 
-
-
 - CC cellular compartment
 - BP biological process
 - MF molecular function
-
 
 ```{r}
 #Could lump everything together by not specifying "ont".
@@ -5089,7 +4969,7 @@ plotCC=dotplot(cgoCC2,showCategory = 30,
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 dev.off()
 ```
-```{r,fig.height = 24,fig.width = 12}
+```{r,fig.height = 5,fig.width = 12}
 plotCC
 ```
 
@@ -5128,7 +5008,7 @@ plotBP=dotplot(cgoBP2,showCategory = 30,
 dev.off()
 ```
 
-```{r,fig.height = 42,fig.width = 12}
+```{r,fig.height = 26,fig.width = 12}
 plotBP
 
 ```
@@ -5169,7 +5049,7 @@ plotMF=dotplot(cgoMF2,showCategory = 30,
 dev.off()
 ```
 
-```{r,fig.height = 30,fig.width = 12}
+```{r,fig.height = 8,fig.width = 12}
 plotMF
 
 ```
@@ -5182,666 +5062,259 @@ plotMF
 dev.off()
 ```
 
-
+### padjLOGFC_GO_enrichments_EnrichR
+This is the order of the tests:
 ```{r}
-#If various groupings for functional annotation
-groupsName<-"_Enrichr"
+# 1. Dynamically gather all your "GOlist" variables into a named list
+# This replaces your manual listAll definition
+target_vars <- ls(pattern = "^GOlist_")
+listAll <- mget(target_vars)
+names(listAll) <- gsub("GOlist_", "", target_vars) # Shortens names to just "TestA", "TestB", etc.
+lapply(listAll, head)
 ```
 
+
+This is the order of the databases for each test:
+- Reactome
+- KEGG_pathways
+- GO_Biological_Process
+- GO_Cellular_Component
+- GO_Molecular_Function
 ```{r}
-#Enrichr
-setEnrichrSite("Enrichr") # Human genes
+# 2. Setup
+path <- getwd()
+dir.create(file.path(path, "GOpadjLOGFC"), showWarnings = FALSE)
+groupsName <- "_Enrichr"
+dbs <- c("Reactome_Pathways_2024", "KEGG_2021_Human", "GO_Biological_Process_2025","GO_Cellular_Component_2025","GO_Molecular_Function_2025")
+db_titles <- c("Reactome", "KEGG_pathways", "GO_Biological_Process","GO_Cellular_Component","GO_Molecular_Function")
+
+setEnrichrSite("Enrichr")
+websiteLive <- !is.null(listEnrichrDbs())
 ```
+
+```{r, fig.height = 7, fig.width = 12}
+# 3. Process everything in one loop
+if (websiteLive) {
+  for (testName in names(listAll)) {
+    message(paste("Processing:", testName))
+    
+    # Run enrichment for the current list
+    enriched <- enrichr(listAll[[testName]], dbs)
+    
+    # Loop through the databases (1, 2, and 3)
+    for (i in seq_along(dbs)) {
+      current_db_name <- db_titles[i]
+      
+      # Generate Plot
+      print(plotEnrich(enriched[[i]], 
+                       showTerms = 30, numChar = 80, y = "Count", 
+                       orderBy = "P.value", 
+                       title = paste(testName,current_db_name)))
+      
+      # Save CSV
+      file_name <- paste0(path, "/GOpadjLOGFC/",  testName, "_",current_db_name, "_",  groupsName, ".csv")
+      write.csv(head(enriched[[i]], 50), file_name, row.names = FALSE)
+    }
+  }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### GOpadjLOGFC_Upstream_Regulator_EnrichR
+This is the order of the tests:
 ```{r}
-websiteLive <- TRUE
-dbs <- listEnrichrDbs()
-if (is.null(dbs)) websiteLive <- FALSE
-if (websiteLive) head(dbs)
+# 1. Dynamically gather all your "GOlist" variables into a named list
+# This replaces your manual listAll definition
+target_vars <- ls(pattern = "^GOlist_")
+listAll <- mget(target_vars)
+names(listAll) <- gsub("GOlist_", "", target_vars) # Shortens names to just "TestA", "TestB", etc.
+lapply(listAll, head)
 ```
 
-```{r,fig.height = 7,fig.width = 12}
-#dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", "GO_Biological_Process_2018")
+This is the order of the databases for each test:
+- ChEA_2022
+- TF_Perturbations_Followed_by_Expression
+- RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO
+- LINCS_L1000_CRISPR_KO_Consensus_Sigs
+```{r}
+# 2. Setup
+path <- getwd()
+dir.create(file.path(path, "GOpadjLOGFC"), showWarnings = FALSE)
+groupsName <- "_Enrichr"
+dbs <- c("ChEA_2022","TF_Perturbations_Followed_by_Expression", "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO", "LINCS_L1000_CRISPR_KO_Consensus_Sigs")
+db_titles <- c("ChEA_2022","TF_Perturbations_Followed_by_Expression", "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO", "LINCS_L1000_CRISPR_KO_Consensus_Sigs")
 
-
-dbs <- c("Reactome_Pathways_2024","Jensen_DISEASES_Curated_2025", "GO_Biological_Process_2025")
-#dbs <- c("Reactome_Pathways_2024","KEGG_2019_Mouse", "GO_Biological_Process_2025")
-
-if (websiteLive) {    enrichedA <- enrichr(GOlistUp_TestA, dbs)}
-if (websiteLive) plotEnrich(enrichedA[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_A_Up")
-write.csv(head(enrichedA[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_A",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedA[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_A_Up")
-write.csv(head(enrichedA[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_A",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedA[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_A_Up")
-write.csv(head(enrichedA[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_A",groupsName,".csv"))
-
-if (websiteLive) {    enrichedB <- enrichr(GOlistUp_TestB, dbs)}
-if (websiteLive) plotEnrich(enrichedB[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_B_Up")
-write.csv(head(enrichedB[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_B",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedB[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_B_Up")
-write.csv(head(enrichedB[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_B",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedB[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_B_Up")
-write.csv(head(enrichedB[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_B",groupsName,".csv"))
-
-if (websiteLive) {    enrichedC <- enrichr(GOlistUp_TestC, dbs)}
-if (websiteLive) plotEnrich(enrichedC[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_C_Up")
-write.csv(head(enrichedC[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_C",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedC[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_C_Up")
-write.csv(head(enrichedC[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_C",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedC[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_C_Up")
-write.csv(head(enrichedC[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_C",groupsName,".csv"))
-
-if (websiteLive) {    enrichedD <- enrichr(GOlistUp_TestD, dbs)}
-if (websiteLive) plotEnrich(enrichedD[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_D_Up")
-write.csv(head(enrichedD[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_D",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_D_Up")
-write.csv(head(enrichedD[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_D",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_D_Up")
-write.csv(head(enrichedD[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_D",groupsName,".csv"))
-
-if (websiteLive) {    enrichedE <- enrichr(GOlistUp_TestE, dbs)}
-if (websiteLive) plotEnrich(enrichedE[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_E_Up")
-write.csv(head(enrichedE[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_E",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedE[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_E_Up")
-write.csv(head(enrichedE[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_E",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedE[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_E_Up")
-write.csv(head(enrichedE[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_E",groupsName,".csv"))
-
+setEnrichrSite("Enrichr")
+websiteLive <- !is.null(listEnrichrDbs())
 ```
 
-```{r,fig.height = 7,fig.width = 12}
-dbs <- c("CellMarker_2024","Descartes_Cell_Types_and_Tissue_2021", "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
-
-if (websiteLive) {    enrichedA <- enrichr(GOlistUp_TestA, dbs)}
-if (websiteLive) plotEnrich(enrichedA[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="CellMarker_2024 Enrichment Analysis Test_A_Up")
-write.csv(head(enrichedA[[1]], 50),paste0(path,"/GOpadjLOGFC/","CellMarker_2024_Enrichment_Analysis_TestUp_A",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedA[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Descartes_Cell_Types_and_Tissue_2021 Enrichment Analysis Test_A_Up")
-write.csv(head(enrichedA[[2]], 50),paste0(path,"/GOpadjLOGFC/","Descartes_Cell_Types_and_Tissue_2021_Enrichment_Analysis_TestUp_A",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedA[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO Enrichment Analysis Test_A_Up")
-write.csv(head(enrichedA[[3]], 50),paste0(path,"/GOpadjLOGFC/","RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO_Enrichment_Analysis_TestUp_A",groupsName,".csv"))
-
-if (websiteLive) {    enrichedB <- enrichr(GOlistUp_TestB, dbs)}
-if (websiteLive) plotEnrich(enrichedB[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="CellMarker_2024 Enrichment Analysis Test_B_Up")
-write.csv(head(enrichedB[[1]], 50),paste0(path,"/GOpadjLOGFC/","CellMarker_2024_Enrichment_Analysis_TestUp_B",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedB[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Descartes_Cell_Types_and_Tissue_2021 Enrichment Analysis Test_B_Up")
-write.csv(head(enrichedB[[2]], 50),paste0(path,"/GOpadjLOGFC/","Descartes_Cell_Types_and_Tissue_2021_Enrichment_Analysis_TestUp_B",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedB[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO Enrichment Analysis Test_B_Up")
-write.csv(head(enrichedB[[3]], 50),paste0(path,"/GOpadjLOGFC/","RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO_Enrichment_Analysis_TestUp_B",groupsName,".csv"))
-
-if (websiteLive) {    enrichedC <- enrichr(GOlistUp_TestC, dbs)}
-if (websiteLive) plotEnrich(enrichedC[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="CellMarker_2024 Enrichment Analysis Test_C_Up")
-write.csv(head(enrichedC[[1]], 50),paste0(path,"/GOpadjLOGFC/","CellMarker_2024_Enrichment_Analysis_TestUp_C",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedC[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Descartes_Cell_Types_and_Tissue_2021 Enrichment Analysis Test_C_Up")
-write.csv(head(enrichedC[[2]], 50),paste0(path,"/GOpadjLOGFC/","Descartes_Cell_Types_and_Tissue_2021_Enrichment_Analysis_TestUp_C",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedC[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO Enrichment Analysis Test_C_Up")
-write.csv(head(enrichedC[[3]], 50),paste0(path,"/GOpadjLOGFC/","RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO_Enrichment_Analysis_TestUp_C",groupsName,".csv"))
-
-if (websiteLive) {    enrichedD <- enrichr(GOlistUp_TestD, dbs)}
-if (websiteLive) plotEnrich(enrichedD[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="CellMarker_2024 Enrichment Analysis Test_D_Up")
-write.csv(head(enrichedD[[1]], 50),paste0(path,"/GOpadjLOGFC/","CellMarker_2024_Enrichment_Analysis_TestUp_D",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Descartes_Cell_Types_and_Tissue_2021 Enrichment Analysis Test_D_Up")
-write.csv(head(enrichedD[[2]], 50),paste0(path,"/GOpadjLOGFC/","Descartes_Cell_Types_and_Tissue_2021_Enrichment_Analysis_TestUp_D",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO Enrichment Analysis Test_D_Up")
-write.csv(head(enrichedD[[3]], 50),paste0(path,"/GOpadjLOGFC/","RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO_Enrichment_Analysis_TestUp_D",groupsName,".csv"))
-
-if (websiteLive) {    enrichedD <- enrichr(GOlistUp_TestE, dbs)}
-if (websiteLive) plotEnrich(enrichedD[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="CellMarker_2024 Enrichment Analysis Test_E_Up")
-write.csv(head(enrichedD[[1]], 50),paste0(path,"/GOpadjLOGFC/","CellMarker_2024_Enrichment_Analysis_TestUp_E",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Descartes_Cell_Types_and_Tissue_2021 Enrichment Analysis Test_E_Up")
-write.csv(head(enrichedD[[2]], 50),paste0(path,"/GOpadjLOGFC/","Descartes_Cell_Types_and_Tissue_2021_Enrichment_Analysis_TestUp_E",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO Enrichment Analysis Test_E_Up")
-write.csv(head(enrichedD[[3]], 50),paste0(path,"/GOpadjLOGFC/","RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO_Enrichment_Analysis_TestUp_E",groupsName,".csv"))
+```{r, fig.height = 7, fig.width = 12}
+# 3. Process everything in one loop
+if (websiteLive) {
+  for (testName in names(listAll)) {
+    message(paste("Processing:", testName))
+    
+    # Run enrichment for the current list
+    enriched <- enrichr(listAll[[testName]], dbs)
+    
+    # Loop through the databases (1, 2, and 3)
+    for (i in seq_along(dbs)) {
+      current_db_name <- db_titles[i]
+      
+      # Generate Plot
+      print(plotEnrich(enriched[[i]], 
+                       showTerms = 30, numChar = 80, y = "Count", 
+                       orderBy = "P.value", 
+                       title = paste(testName,current_db_name)))
+      
+      # Save CSV
+      file_name <- paste0(path, "/GOpadjLOGFC/", testName, "_",current_db_name, "_",  groupsName, ".csv")
+      write.csv(head(enriched[[i]], 50), file_name, row.names = FALSE)
+    }
+  }
+}
 ```
 
-```{r,fig.height = 7,fig.width = 12}
-#Rare Diseases
+### GOpadjLOGFC_Cell_Types_EnrichR
+This is the order of the tests:
+```{r}
+# 1. Dynamically gather all your "GOlist" variables into a named list
+# This replaces your manual listAll definition
+target_vars <- ls(pattern = "^GOlist_")
+listAll <- mget(target_vars)
+names(listAll) <- gsub("GOlist_", "", target_vars) # Shortens names to just "TestA", "TestB", etc.
+lapply(listAll, head)
+```
+
+This is the order of the databases for each test:
+- CellMarker_2024
+- Descartes_Cell_Types_and_Tissue_2021
+- Human_Gene_Atlas
+```{r}
+# 2. Setup
+path <- getwd()
+dir.create(file.path(path, "GOpadjLOGFC"), showWarnings = FALSE)
+groupsName <- "_Enrichr"
+dbs <- c("CellMarker_2024","Descartes_Cell_Types_and_Tissue_2021", "Human_Gene_Atlas")
+db_titles <- c("CellMarker_2024","Descartes_Cell_Types_and_Tissue_2021", "Human_Gene_Atlas")
+
+setEnrichrSite("Enrichr")
+websiteLive <- !is.null(listEnrichrDbs())
+```
+
+```{r, fig.height = 7, fig.width = 12}
+# 3. Process everything in one loop
+if (websiteLive) {
+  for (testName in names(listAll)) {
+    message(paste("Processing:", testName))
+    
+    # Run enrichment for the current list
+    enriched <- enrichr(listAll[[testName]], dbs)
+    
+    # Loop through the databases (1, 2, and 3)
+    for (i in seq_along(dbs)) {
+      current_db_name <- db_titles[i]
+      
+      # Generate Plot
+      print(plotEnrich(enriched[[i]], 
+                       showTerms = 30, numChar = 80, y = "Count", 
+                       orderBy = "P.value", 
+                       title = paste(testName,current_db_name)))
+      
+      # Save CSV
+      file_name <- paste0(path, "/GOpadjLOGFC/",  testName, "_",current_db_name, "_",  groupsName, ".csv")
+      write.csv(head(enriched[[i]], 50), file_name, row.names = FALSE)
+    }
+  }
+}
+```
+
+
+
+### GOpadjLOGFC_Rare_Diseases_EnrichR
+This is the order of the tests:
+```{r}
+# 1. Dynamically gather all your "GOlist" variables into a named list
+# This replaces your manual listAll definition
+target_vars <- ls(pattern = "^GOlist_")
+listAll <- mget(target_vars)
+names(listAll) <- gsub("GOlist_", "", target_vars) # Shortens names to just "TestA", "TestB", etc.
+lapply(listAll, head)
+```
+
+This is the order of the databases for each test:
+- Rare_Diseases_GeneRIF_ARCHS4_Predictions
+- Rare_Diseases_GeneRIF_Gene_Lists
+- Rare_Diseases_AutoRIF_ARCHS4_Predictions
+- Rare_Diseases_AutoRIF_Gene_Lists
+```{r}
+# 2. Setup
+path <- getwd()
+dir.create(file.path(path, "GOpadjLOGFC"), showWarnings = FALSE)
+groupsName <- "_Enrichr"
 dbs <- c("Rare_Diseases_GeneRIF_ARCHS4_Predictions","Rare_Diseases_GeneRIF_Gene_Lists", "Rare_Diseases_AutoRIF_ARCHS4_Predictions", "Rare_Diseases_AutoRIF_Gene_Lists")
+db_titles <- c("Rare_Diseases_GeneRIF_ARCHS4_Predictions","Rare_Diseases_GeneRIF_Gene_Lists", "Rare_Diseases_AutoRIF_ARCHS4_Predictions", "Rare_Diseases_AutoRIF_Gene_Lists")
 
-
-if (websiteLive) {    enrichedA <- enrichr(GOlistUp_TestA, dbs)}
-if (websiteLive) plotEnrich(enrichedA[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_ARCHS4_Predictions Enrichment Analysis Test_A_Up")
-write.csv(head(enrichedA[[1]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_GeneRIF_ARCHS4_Predictions_Enrichment_Analysis_TestUp_A",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedA[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_Gene_Lists Enrichment Analysis Test_A_Up")
-write.csv(head(enrichedA[[2]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_GeneRIF_Gene_Lists_Enrichment_Analysis_TestUp_A",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedA[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_ARCHS4_Predictions Enrichment Analysis Test_A_Up")
-write.csv(head(enrichedA[[3]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_AutoRIF_ARCHS4_Predictions_Enrichment_Analysis_TestUp_A",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedA[[4]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_Gene_Lists Enrichment Analysis Test_A_Up")
-write.csv(head(enrichedA[[4]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_AutoRIF_Gene_Lists_Enrichment_Analysis_TestUp_A",groupsName,".csv"))
-
-if (websiteLive) {    enrichedB <- enrichr(GOlistUp_TestB, dbs)}
-if (websiteLive) plotEnrich(enrichedB[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_ARCHS4_Predictions Enrichment Analysis Test_B_Up")
-write.csv(head(enrichedB[[1]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_GeneRIF_ARCHS4_Predictions_Enrichment_Analysis_TestUp_B",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedB[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_Gene_Lists Enrichment Analysis Test_B_Up")
-write.csv(head(enrichedB[[2]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_GeneRIF_Gene_Lists_Enrichment_Analysis_TestUp_B",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedB[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_ARCHS4_Predictions Enrichment Analysis Test_B_Up")
-write.csv(head(enrichedB[[3]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_AutoRIF_ARCHS4_Predictions_Enrichment_Analysis_TestUp_B",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedB[[4]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_Gene_Lists Enrichment Analysis Test_B_Up")
-write.csv(head(enrichedB[[4]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_AutoRIF_Gene_Lists_Enrichment_Analysis_TestUp_B",groupsName,".csv"))
-
-if (websiteLive) {    enrichedC <- enrichr(GOlistUp_TestC, dbs)}
-if (websiteLive) plotEnrich(enrichedC[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_ARCHS4_Predictions Enrichment Analysis Test_C_Up")
-write.csv(head(enrichedC[[1]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_GeneRIF_ARCHS4_Predictions_Enrichment_Analysis_TestUp_C",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedC[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_Gene_Lists Enrichment Analysis Test_C_Up")
-write.csv(head(enrichedC[[2]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_GeneRIF_Gene_Lists_Enrichment_Analysis_TestUp_C",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedC[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_ARCHS4_Predictions Enrichment Analysis Test_C_Up")
-write.csv(head(enrichedC[[3]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_AutoRIF_ARCHS4_Predictions_Enrichment_Analysis_TestUp_C",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedC[[4]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_Gene_Lists Enrichment Analysis Test_C_Up")
-write.csv(head(enrichedC[[4]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_AutoRIF_Gene_Lists_Enrichment_Analysis_TestUp_C",groupsName,".csv"))
-
-if (websiteLive) {    enrichedD <- enrichr(GOlistUp_TestD, dbs)}
-if (websiteLive) plotEnrich(enrichedD[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_ARCHS4_Predictions Enrichment Analysis Test_D_Up")
-write.csv(head(enrichedD[[1]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_GeneRIF_ARCHS4_Predictions_Enrichment_Analysis_TestUp_D",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_Gene_Lists Enrichment Analysis Test_D_Up")
-write.csv(head(enrichedD[[2]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_GeneRIF_Gene_Lists_Enrichment_Analysis_TestUp_D",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_ARCHS4_Predictions Enrichment Analysis Test_D_Up")
-write.csv(head(enrichedD[[3]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_AutoRIF_ARCHS4_Predictions_Enrichment_Analysis_TestUp_D",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[4]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_Gene_Lists Enrichment Analysis Test_D_Up")
-write.csv(head(enrichedD[[4]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_AutoRIF_Gene_Lists_Enrichment_Analysis_TestUp_D",groupsName,".csv"))
-
-if (websiteLive) {    enrichedD <- enrichr(GOlistUp_TestE, dbs)}
-if (websiteLive) plotEnrich(enrichedD[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_ARCHS4_Predictions Enrichment Analysis Test_E_Up")
-write.csv(head(enrichedD[[1]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_GeneRIF_ARCHS4_Predictions_Enrichment_Analysis_TestUp_E",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_Gene_Lists Enrichment Analysis Test_E_Up")
-write.csv(head(enrichedD[[2]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_GeneRIF_Gene_Lists_Enrichment_Analysis_TestUp_E",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_ARCHS4_Predictions Enrichment Analysis Test_E_Up")
-write.csv(head(enrichedD[[3]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_AutoRIF_ARCHS4_Predictions_Enrichment_Analysis_TestUp_E",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[4]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_Gene_Lists Enrichment Analysis Test_E_Up")
-write.csv(head(enrichedD[[4]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_AutoRIF_Gene_Lists_Enrichment_Analysis_TestUp_E",groupsName,".csv"))
-
+setEnrichrSite("Enrichr")
+websiteLive <- !is.null(listEnrichrDbs())
 ```
 
-```{r,fig.height = 7,fig.width = 12}
-
-#if (websiteLive) {    enrichedF <- enrichr(GOlistUp_TestF, dbs)}
-#if (websiteLive) plotEnrich(enrichedF[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_F_Up")
-#write.csv(head(enrichedF[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_F",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedF[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_F_Up")
-#write.csv(head(enrichedF[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_F",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedF[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_F_Up")
-#write.csv(head(enrichedF[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_F",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedG <- enrichr(GOlistUp_TestG, dbs)}
-#if (websiteLive) plotEnrich(enrichedG[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_G_Up")
-#write.csv(head(enrichedG[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_G",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedG[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_G_Up")
-#write.csv(head(enrichedG[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_G",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedG[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_G_Up")
-#write.csv(head(enrichedG[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_G",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedH <- enrichr(GOlistUp_TestH, dbs)}
-#if (websiteLive) plotEnrich(enrichedH[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_H_Up")
-#write.csv(head(enrichedH[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_H",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedH[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_H_Up")
-#write.csv(head(enrichedH[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_H",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedH[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_H_Up")
-#write.csv(head(enrichedH[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_H",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedI <- enrichr(GOlistUp_TestI, dbs)}
-#if (websiteLive) plotEnrich(enrichedI[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_I_Up")
-#write.csv(head(enrichedI[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_I",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedI[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_I_Up")
-#write.csv(head(enrichedI[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_I",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedI[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_I_Up")
-#write.csv(head(enrichedI[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_I",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedJ <- enrichr(GOlistUp_TestJ, dbs)}
-#if (websiteLive) plotEnrich(enrichedJ[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_J_Up")
-#write.csv(head(enrichedJ[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_J",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedJ[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_J_Up")
-#write.csv(head(enrichedJ[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_J",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedJ[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_J_Up")
-#write.csv(head(enrichedJ[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_J",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedK <- enrichr(GOlistUp_TestK, dbs)}
-#if (websiteLive) plotEnrich(enrichedK[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_K_Up")
-#write.csv(head(enrichedK[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_K",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedK[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_K_Up")
-#write.csv(head(enrichedK[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_K",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedK[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_K_Up")
-#write.csv(head(enrichedK[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_K",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedL <- enrichr(GOlistUp_TestL, dbs)}
-#if (websiteLive) plotEnrich(enrichedL[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_L_Up")
-#write.csv(head(enrichedL[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_L",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedL[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_L_Up")
-#write.csv(head(enrichedL[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_L",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedL[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_L_Up")
-#write.csv(head(enrichedL[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_L",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedM <- enrichr(GOlistUp_TestM, dbs)}
-#if (websiteLive) plotEnrich(enrichedM[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_M_Up")
-#write.csv(head(enrichedM[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_M",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedM[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_M_Up")
-#write.csv(head(enrichedM[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_M",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedM[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_M_Up")
-#write.csv(head(enrichedM[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_M",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedN <- enrichr(GOlistUp_TestN, dbs)}
-#if (websiteLive) plotEnrich(enrichedN[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_N_Up")
-#write.csv(head(enrichedN[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_N",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedN[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_N_Up")
-#write.csv(head(enrichedN[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_N",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedN[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_N_Up")
-#write.csv(head(enrichedN[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_N",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedO <- enrichr(GOlistUp_TestO, dbs)}
-#if (websiteLive) plotEnrich(enrichedO[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_O_Up")
-#write.csv(head(enrichedO[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_O",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedO[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_O_Up")
-#write.csv(head(enrichedO[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_O",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedO[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_O_Up")
-#write.csv(head(enrichedO[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_O",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedP <- enrichr(GOlistUp_TestP, dbs)}
-#if (websiteLive) plotEnrich(enrichedP[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_P_Up")
-#write.csv(head(enrichedP[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_P",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedP[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_P_Up")
-#write.csv(head(enrichedP[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_P",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedP[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_P_Up")
-#write.csv(head(enrichedP[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_P",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedQ <- enrichr(GOlistUp_TestQ, dbs)}
-#if (websiteLive) plotEnrich(enrichedQ[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_Q_Up")
-#write.csv(head(enrichedQ[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_Q",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedQ[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_Q_Up")
-#write.csv(head(enrichedQ[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_Q",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedQ[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_Q_Up")
-#write.csv(head(enrichedQ[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_Q",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedR <- enrichr(GOlistUp_TestR, dbs)}
-#if (websiteLive) plotEnrich(enrichedR[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_R_Up")
-#write.csv(head(enrichedR[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_R",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedR[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_R_Up")
-#write.csv(head(enrichedR[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_R",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedR[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_R_Up")
-#write.csv(head(enrichedR[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_R",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedS <- enrichr(GOlistUp_TestS, dbs)}
-#if (websiteLive) plotEnrich(enrichedS[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_S_Up")
-#write.csv(head(enrichedS[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_S",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedS[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_S_Up")
-#write.csv(head(enrichedS[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_S",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedS[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_S_Up")
-#write.csv(head(enrichedS[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_S",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedT <- enrichr(GOlistUp_TestT, dbs)}
-#if (websiteLive) plotEnrich(enrichedT[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_T_Up")
-#write.csv(head(enrichedT[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_T",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedT[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_T_Up")
-#write.csv(head(enrichedT[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_T",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedT[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_T_Up")
-#write.csv(head(enrichedT[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_T",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedU <- enrichr(GOlistUp_TestU, dbs)}
-#if (websiteLive) plotEnrich(enrichedU[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_U_Up")
-#write.csv(head(enrichedU[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_U",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedU[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_U_Up")
-#write.csv(head(enrichedU[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_U",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedU[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_U_Up")
-#write.csv(head(enrichedU[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_U",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedV <- enrichr(GOlistUp_TestV, dbs)}
-#if (websiteLive) plotEnrich(enrichedV[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_V_Up")
-#write.csv(head(enrichedV[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_V",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedV[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_V_Up")
-#write.csv(head(enrichedV[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_V",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedV[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_V_Up")
-#write.csv(head(enrichedV[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_V",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedV <- enrichr(GOlistUp_TestW, dbs)}
-#if (websiteLive) plotEnrich(enrichedV[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_Up_W")
-#write.csv(head(enrichedV[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_W",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedV[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_Up_W")
-#write.csv(head(enrichedV[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_W",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedV[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_Up_W")
-#write.csv(head(enrichedV[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_W",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedX <- enrichr(GOlistUp_TestX, dbs)}
-#if (websiteLive) plotEnrich(enrichedX[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_X_Up")
-#write.csv(head(enrichedX[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_X",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedX[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_X_Up")
-#write.csv(head(enrichedX[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_X",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedX[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_X_Up")
-#write.csv(head(enrichedX[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_X",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedY <- enrichr(GOlistUp_TestY, dbs)}
-#if (websiteLive) plotEnrich(enrichedY[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_Y_Up")
-#write.csv(head(enrichedY[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_Y",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedY[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_Y_Up")
-#write.csv(head(enrichedY[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_Y",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedY[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_Y_Up")
-#write.csv(head(enrichedY[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_Y",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedZ <- enrichr(GOlistUp_TestZ, dbs)}
-#if (websiteLive) plotEnrich(enrichedZ[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_Z_Up")
-#write.csv(head(enrichedZ[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_Z",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedZ[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_Z_Up")
-#write.csv(head(enrichedZ[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_Z",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedZ[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_Z_Up")
-#write.csv(head(enrichedZ[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_Z",groupsName,".csv"))
-
+```{r, fig.height = 7, fig.width = 12}
+# 3. Process everything in one loop
+if (websiteLive) {
+  for (testName in names(listAll)) {
+    message(paste("Processing:", testName))
+    
+    # Run enrichment for the current list
+    enriched <- enrichr(listAll[[testName]], dbs)
+    
+    # Loop through the databases (1, 2, and 3)
+    for (i in seq_along(dbs)) {
+      current_db_name <- db_titles[i]
+      
+      # Generate Plot
+      print(plotEnrich(enriched[[i]], 
+                       showTerms = 30, numChar = 80, y = "Count", 
+                       orderBy = "P.value", 
+                       title = paste(testName,current_db_name)))
+      
+      # Save CSV
+      file_name <- paste0(path, "/GOpadjLOGFC/",  testName, "_",current_db_name, "_",  groupsName, ".csv")
+      write.csv(head(enriched[[i]], 50), file_name, row.names = FALSE)
+    }
+  }
+}
 ```
 
-```{r,fig.height = 7,fig.width = 12}
-#dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", "GO_Biological_Process_2018")
 
 
-dbs <- c("Reactome_Pathways_2024","Jensen_DISEASES_Curated_2025", "GO_Biological_Process_2025")
-#dbs <- c("Reactome_Pathways_2024","KEGG_2019_Mouse", "GO_Biological_Process_2025")
 
-if (websiteLive) {    enrichedA <- enrichr(GOlistDown_TestA, dbs)}
-if (websiteLive) plotEnrich(enrichedA[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_A_Down")
-write.csv(head(enrichedA[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_A",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedA[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_A_Down")
-write.csv(head(enrichedA[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_A",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedA[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_A_Down")
-write.csv(head(enrichedA[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_A",groupsName,".csv"))
-
-if (websiteLive) {    enrichedB <- enrichr(GOlistDown_TestB, dbs)}
-if (websiteLive) plotEnrich(enrichedB[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_B_Down")
-write.csv(head(enrichedB[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_B",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedB[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_B_Down")
-write.csv(head(enrichedB[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_B",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedB[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_B_Down")
-write.csv(head(enrichedB[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_B",groupsName,".csv"))
-
-if (websiteLive) {    enrichedC <- enrichr(GOlistDown_TestC, dbs)}
-if (websiteLive) plotEnrich(enrichedC[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_C_Down")
-write.csv(head(enrichedC[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_C",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedC[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_C_Down")
-write.csv(head(enrichedC[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_C",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedC[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_C_Down")
-write.csv(head(enrichedC[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_C",groupsName,".csv"))
-
-if (websiteLive) {    enrichedD <- enrichr(GOlistDown_TestD, dbs)}
-if (websiteLive) plotEnrich(enrichedD[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_D_Down")
-write.csv(head(enrichedD[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_D",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_D_Down")
-write.csv(head(enrichedD[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_D",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_D_Down")
-write.csv(head(enrichedD[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_D",groupsName,".csv"))
-
-if (websiteLive) {    enrichedE <- enrichr(GOlistDown_TestE, dbs)}
-if (websiteLive) plotEnrich(enrichedE[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_E_Down")
-write.csv(head(enrichedE[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_E",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedE[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_E_Down")
-write.csv(head(enrichedE[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_E",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedE[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_E_Down")
-write.csv(head(enrichedE[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_E",groupsName,".csv"))
-
-```
-
-```{r,fig.height = 7,fig.width = 12}
-dbs <- c("CellMarker_2024","Descartes_Cell_Types_and_Tissue_2021", "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
-
-if (websiteLive) {    enrichedA <- enrichr(GOlistDown_TestA, dbs)}
-if (websiteLive) plotEnrich(enrichedA[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="CellMarker_2024 Enrichment Analysis Test_A_Down")
-write.csv(head(enrichedA[[1]], 50),paste0(path,"/GOpadjLOGFC/","CellMarker_2024_Enrichment_Analysis_TestUp_A",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedA[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Descartes_Cell_Types_and_Tissue_2021 Enrichment Analysis Test_A_Down")
-write.csv(head(enrichedA[[2]], 50),paste0(path,"/GOpadjLOGFC/","Descartes_Cell_Types_and_Tissue_2021_Enrichment_Analysis_TestUp_A",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedA[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO Enrichment Analysis Test_A_Down")
-write.csv(head(enrichedA[[3]], 50),paste0(path,"/GOpadjLOGFC/","RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO_Enrichment_Analysis_TestUp_A",groupsName,".csv"))
-
-if (websiteLive) {    enrichedB <- enrichr(GOlistDown_TestB, dbs)}
-if (websiteLive) plotEnrich(enrichedB[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="CellMarker_2024 Enrichment Analysis Test_B_Down")
-write.csv(head(enrichedB[[1]], 50),paste0(path,"/GOpadjLOGFC/","CellMarker_2024_Enrichment_Analysis_TestUp_B",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedB[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Descartes_Cell_Types_and_Tissue_2021 Enrichment Analysis Test_B_Down")
-write.csv(head(enrichedB[[2]], 50),paste0(path,"/GOpadjLOGFC/","Descartes_Cell_Types_and_Tissue_2021_Enrichment_Analysis_TestUp_B",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedB[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO Enrichment Analysis Test_B_Down")
-write.csv(head(enrichedB[[3]], 50),paste0(path,"/GOpadjLOGFC/","RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO_Enrichment_Analysis_TestUp_B",groupsName,".csv"))
-
-if (websiteLive) {    enrichedC <- enrichr(GOlistDown_TestC, dbs)}
-if (websiteLive) plotEnrich(enrichedC[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="CellMarker_2024 Enrichment Analysis Test_C_Down")
-write.csv(head(enrichedC[[1]], 50),paste0(path,"/GOpadjLOGFC/","CellMarker_2024_Enrichment_Analysis_TestUp_C",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedC[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Descartes_Cell_Types_and_Tissue_2021 Enrichment Analysis Test_C_Down")
-write.csv(head(enrichedC[[2]], 50),paste0(path,"/GOpadjLOGFC/","Descartes_Cell_Types_and_Tissue_2021_Enrichment_Analysis_TestUp_C",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedC[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO Enrichment Analysis Test_C_Down")
-write.csv(head(enrichedC[[3]], 50),paste0(path,"/GOpadjLOGFC/","RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO_Enrichment_Analysis_TestUp_C",groupsName,".csv"))
-
-if (websiteLive) {    enrichedD <- enrichr(GOlistDown_TestD, dbs)}
-if (websiteLive) plotEnrich(enrichedD[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="CellMarker_2024 Enrichment Analysis Test_D_Down")
-write.csv(head(enrichedD[[1]], 50),paste0(path,"/GOpadjLOGFC/","CellMarker_2024_Enrichment_Analysis_TestUp_D",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Descartes_Cell_Types_and_Tissue_2021 Enrichment Analysis Test_D_Down")
-write.csv(head(enrichedD[[2]], 50),paste0(path,"/GOpadjLOGFC/","Descartes_Cell_Types_and_Tissue_2021_Enrichment_Analysis_TestUp_D",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO Enrichment Analysis Test_D_Down")
-write.csv(head(enrichedD[[3]], 50),paste0(path,"/GOpadjLOGFC/","RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO_Enrichment_Analysis_TestUp_D",groupsName,".csv"))
-
-if (websiteLive) {    enrichedD <- enrichr(GOlistDown_TestE, dbs)}
-if (websiteLive) plotEnrich(enrichedD[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="CellMarker_2024 Enrichment Analysis Test_E_Down")
-write.csv(head(enrichedD[[1]], 50),paste0(path,"/GOpadjLOGFC/","CellMarker_2024_Enrichment_Analysis_TestUp_E",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Descartes_Cell_Types_and_Tissue_2021 Enrichment Analysis Test_E_Down")
-write.csv(head(enrichedD[[2]], 50),paste0(path,"/GOpadjLOGFC/","Descartes_Cell_Types_and_Tissue_2021_Enrichment_Analysis_TestUp_E",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO Enrichment Analysis Test_E_Down")
-write.csv(head(enrichedD[[3]], 50),paste0(path,"/GOpadjLOGFC/","RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO_Enrichment_Analysis_TestUp_E",groupsName,".csv"))
-```
-
-```{r,fig.height = 7,fig.width = 12}
-#Rare Diseases
-dbs <- c("Rare_Diseases_GeneRIF_ARCHS4_Predictions","Rare_Diseases_GeneRIF_Gene_Lists", "Rare_Diseases_AutoRIF_ARCHS4_Predictions", "Rare_Diseases_AutoRIF_Gene_Lists")
-
-
-if (websiteLive) {    enrichedA <- enrichr(GOlistDown_TestA, dbs)}
-if (websiteLive) plotEnrich(enrichedA[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_ARCHS4_Predictions Enrichment Analysis Test_A_Down")
-write.csv(head(enrichedA[[1]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_GeneRIF_ARCHS4_Predictions_Enrichment_Analysis_TestUp_A",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedA[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_Gene_Lists Enrichment Analysis Test_A_Down")
-write.csv(head(enrichedA[[2]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_GeneRIF_Gene_Lists_Enrichment_Analysis_TestUp_A",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedA[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_ARCHS4_Predictions Enrichment Analysis Test_A_Down")
-write.csv(head(enrichedA[[3]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_AutoRIF_ARCHS4_Predictions_Enrichment_Analysis_TestUp_A",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedA[[4]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_Gene_Lists Enrichment Analysis Test_A_Down")
-write.csv(head(enrichedA[[4]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_AutoRIF_Gene_Lists_Enrichment_Analysis_TestUp_A",groupsName,".csv"))
-
-if (websiteLive) {    enrichedB <- enrichr(GOlistDown_TestB, dbs)}
-if (websiteLive) plotEnrich(enrichedB[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_ARCHS4_Predictions Enrichment Analysis Test_B_Down")
-write.csv(head(enrichedB[[1]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_GeneRIF_ARCHS4_Predictions_Enrichment_Analysis_TestUp_B",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedB[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_Gene_Lists Enrichment Analysis Test_B_Down")
-write.csv(head(enrichedB[[2]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_GeneRIF_Gene_Lists_Enrichment_Analysis_TestUp_B",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedB[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_ARCHS4_Predictions Enrichment Analysis Test_B_Down")
-write.csv(head(enrichedB[[3]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_AutoRIF_ARCHS4_Predictions_Enrichment_Analysis_TestUp_B",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedB[[4]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_Gene_Lists Enrichment Analysis Test_B_Down")
-write.csv(head(enrichedB[[4]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_AutoRIF_Gene_Lists_Enrichment_Analysis_TestUp_B",groupsName,".csv"))
-
-if (websiteLive) {    enrichedC <- enrichr(GOlistDown_TestC, dbs)}
-if (websiteLive) plotEnrich(enrichedC[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_ARCHS4_Predictions Enrichment Analysis Test_C_Down")
-write.csv(head(enrichedC[[1]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_GeneRIF_ARCHS4_Predictions_Enrichment_Analysis_TestUp_C",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedC[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_Gene_Lists Enrichment Analysis Test_C_Down")
-write.csv(head(enrichedC[[2]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_GeneRIF_Gene_Lists_Enrichment_Analysis_TestUp_C",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedC[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_ARCHS4_Predictions Enrichment Analysis Test_C_Down")
-write.csv(head(enrichedC[[3]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_AutoRIF_ARCHS4_Predictions_Enrichment_Analysis_TestUp_C",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedC[[4]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_Gene_Lists Enrichment Analysis Test_C_Down")
-write.csv(head(enrichedC[[4]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_AutoRIF_Gene_Lists_Enrichment_Analysis_TestUp_C",groupsName,".csv"))
-
-if (websiteLive) {    enrichedD <- enrichr(GOlistDown_TestD, dbs)}
-if (websiteLive) plotEnrich(enrichedD[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_ARCHS4_Predictions Enrichment Analysis Test_D_Down")
-write.csv(head(enrichedD[[1]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_GeneRIF_ARCHS4_Predictions_Enrichment_Analysis_TestUp_D",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_Gene_Lists Enrichment Analysis Test_D_Down")
-write.csv(head(enrichedD[[2]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_GeneRIF_Gene_Lists_Enrichment_Analysis_TestUp_D",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_ARCHS4_Predictions Enrichment Analysis Test_D_Down")
-write.csv(head(enrichedD[[3]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_AutoRIF_ARCHS4_Predictions_Enrichment_Analysis_TestUp_D",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[4]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_Gene_Lists Enrichment Analysis Test_D_Down")
-write.csv(head(enrichedD[[4]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_AutoRIF_Gene_Lists_Enrichment_Analysis_TestUp_D",groupsName,".csv"))
-
-if (websiteLive) {    enrichedD <- enrichr(GOlistDown_TestE, dbs)}
-if (websiteLive) plotEnrich(enrichedD[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_ARCHS4_Predictions Enrichment Analysis Test_E_Down")
-write.csv(head(enrichedD[[1]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_GeneRIF_ARCHS4_Predictions_Enrichment_Analysis_TestUp_E",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_GeneRIF_Gene_Lists Enrichment Analysis Test_E_Down")
-write.csv(head(enrichedD[[2]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_GeneRIF_Gene_Lists_Enrichment_Analysis_TestUp_E",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_ARCHS4_Predictions Enrichment Analysis Test_E_Down")
-write.csv(head(enrichedD[[3]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_AutoRIF_ARCHS4_Predictions_Enrichment_Analysis_TestUp_E",groupsName,".csv"))
-if (websiteLive) plotEnrich(enrichedD[[4]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Rare_Diseases_AutoRIF_Gene_Lists Enrichment Analysis Test_E_Down")
-write.csv(head(enrichedD[[4]], 50),paste0(path,"/GOpadjLOGFC/","Rare_Diseases_AutoRIF_Gene_Lists_Enrichment_Analysis_TestUp_E",groupsName,".csv"))
-
-```
-
-```{r,fig.height = 7,fig.width = 12}
-
-#if (websiteLive) {    enrichedF <- enrichr(GOlistDown_TestF, dbs)}
-#if (websiteLive) plotEnrich(enrichedF[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_F_Down")
-#write.csv(head(enrichedF[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_F",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedF[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_F_Down")
-#write.csv(head(enrichedF[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_F",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedF[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_F_Down")
-#write.csv(head(enrichedF[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_F",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedG <- enrichr(GOlistDown_TestG, dbs)}
-#if (websiteLive) plotEnrich(enrichedG[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_G_Down")
-#write.csv(head(enrichedG[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_G",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedG[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_G_Down")
-#write.csv(head(enrichedG[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_G",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedG[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_G_Down")
-#write.csv(head(enrichedG[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_G",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedH <- enrichr(GOlistDown_TestH, dbs)}
-#if (websiteLive) plotEnrich(enrichedH[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_H_Down")
-#write.csv(head(enrichedH[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_H",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedH[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_H_Down")
-#write.csv(head(enrichedH[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_H",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedH[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_H_Down")
-#write.csv(head(enrichedH[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_H",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedI <- enrichr(GOlistDown_TestI, dbs)}
-#if (websiteLive) plotEnrich(enrichedI[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_I_Down")
-#write.csv(head(enrichedI[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_I",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedI[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_I_Down")
-#write.csv(head(enrichedI[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_I",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedI[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_I_Down")
-#write.csv(head(enrichedI[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_I",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedJ <- enrichr(GOlistDown_TestJ, dbs)}
-#if (websiteLive) plotEnrich(enrichedJ[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_J_Down")
-#write.csv(head(enrichedJ[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_J",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedJ[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_J_Down")
-#write.csv(head(enrichedJ[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_J",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedJ[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_J_Down")
-#write.csv(head(enrichedJ[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_J",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedK <- enrichr(GOlistDown_TestK, dbs)}
-#if (websiteLive) plotEnrich(enrichedK[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_K_Down")
-#write.csv(head(enrichedK[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_K",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedK[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_K_Down")
-#write.csv(head(enrichedK[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_K",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedK[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_K_Down")
-#write.csv(head(enrichedK[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_K",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedL <- enrichr(GOlistDown_TestL, dbs)}
-#if (websiteLive) plotEnrich(enrichedL[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_L_Down")
-#write.csv(head(enrichedL[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_L",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedL[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_L_Down")
-#write.csv(head(enrichedL[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_L",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedL[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_L_Down")
-#write.csv(head(enrichedL[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_L",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedM <- enrichr(GOlistDown_TestM, dbs)}
-#if (websiteLive) plotEnrich(enrichedM[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_M_Down")
-#write.csv(head(enrichedM[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_M",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedM[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_M_Down")
-#write.csv(head(enrichedM[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_M",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedM[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_M_Down")
-#write.csv(head(enrichedM[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_M",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedN <- enrichr(GOlistDown_TestN, dbs)}
-#if (websiteLive) plotEnrich(enrichedN[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_N_Down")
-#write.csv(head(enrichedN[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_N",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedN[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_N_Down")
-#write.csv(head(enrichedN[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_N",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedN[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_N_Down")
-#write.csv(head(enrichedN[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_N",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedO <- enrichr(GOlistDown_TestO, dbs)}
-#if (websiteLive) plotEnrich(enrichedO[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_O_Down")
-#write.csv(head(enrichedO[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_O",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedO[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_O_Down")
-#write.csv(head(enrichedO[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_O",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedO[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_O_Down")
-#write.csv(head(enrichedO[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_O",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedP <- enrichr(GOlistDown_TestP, dbs)}
-#if (websiteLive) plotEnrich(enrichedP[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_P_Down")
-#write.csv(head(enrichedP[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_P",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedP[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_P_Down")
-#write.csv(head(enrichedP[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_P",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedP[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_P_Down")
-#write.csv(head(enrichedP[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_P",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedQ <- enrichr(GOlistDown_TestQ, dbs)}
-#if (websiteLive) plotEnrich(enrichedQ[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_Q_Down")
-#write.csv(head(enrichedQ[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_Q",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedQ[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_Q_Down")
-#write.csv(head(enrichedQ[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_Q",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedQ[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_Q_Down")
-#write.csv(head(enrichedQ[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_Q",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedR <- enrichr(GOlistDown_TestR, dbs)}
-#if (websiteLive) plotEnrich(enrichedR[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_R_Down")
-#write.csv(head(enrichedR[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_R",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedR[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_R_Down")
-#write.csv(head(enrichedR[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_R",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedR[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_R_Down")
-#write.csv(head(enrichedR[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_R",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedS <- enrichr(GOlistDown_TestS, dbs)}
-#if (websiteLive) plotEnrich(enrichedS[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_S_Down")
-#write.csv(head(enrichedS[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_S",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedS[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_S_Down")
-#write.csv(head(enrichedS[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_S",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedS[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_S_Down")
-#write.csv(head(enrichedS[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_S",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedT <- enrichr(GOlistDown_TestT, dbs)}
-#if (websiteLive) plotEnrich(enrichedT[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_T_Down")
-#write.csv(head(enrichedT[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_T",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedT[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_T_Down")
-#write.csv(head(enrichedT[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_T",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedT[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_T_Down")
-#write.csv(head(enrichedT[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_T",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedU <- enrichr(GOlistDown_TestU, dbs)}
-#if (websiteLive) plotEnrich(enrichedU[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_U_Down")
-#write.csv(head(enrichedU[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_U",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedU[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_U_Down")
-#write.csv(head(enrichedU[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_U",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedU[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_U_Down")
-#write.csv(head(enrichedU[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_U",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedV <- enrichr(GOlistDown_TestV, dbs)}
-#if (websiteLive) plotEnrich(enrichedV[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_V_Down")
-#write.csv(head(enrichedV[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_V",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedV[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_V_Down")
-#write.csv(head(enrichedV[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_V",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedV[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_V_Down")
-#write.csv(head(enrichedV[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_V",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedV <- enrichr(GOlistDown_TestW, dbs)}
-#if (websiteLive) plotEnrich(enrichedV[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_Down_W")
-#write.csv(head(enrichedV[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_W",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedV[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_Down_W")
-#write.csv(head(enrichedV[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_W",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedV[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_Down_W")
-#write.csv(head(enrichedV[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_W",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedX <- enrichr(GOlistDown_TestX, dbs)}
-#if (websiteLive) plotEnrich(enrichedX[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_X_Down")
-#write.csv(head(enrichedX[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_X",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedX[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_X_Down")
-#write.csv(head(enrichedX[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_X",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedX[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_X_Down")
-#write.csv(head(enrichedX[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_X",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedY <- enrichr(GOlistDown_TestY, dbs)}
-#if (websiteLive) plotEnrich(enrichedY[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_Y_Down")
-#write.csv(head(enrichedY[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_Y",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedY[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_Y_Down")
-#write.csv(head(enrichedY[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_Y",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedY[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_Y_Down")
-#write.csv(head(enrichedY[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_Y",groupsName,".csv"))
-
-#if (websiteLive) {    enrichedZ <- enrichr(GOlistDown_TestZ, dbs)}
-#if (websiteLive) plotEnrich(enrichedZ[[1]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Reactome Enrichment Analysis Test_Z_Down")
-#write.csv(head(enrichedZ[[1]], 50),paste0(path,"/GOpadjLOGFC/","Reactome_Enrichment_Analysis_TestUp_Z",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedZ[[2]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="Jensen_DISEASES Enrichment Analysis Test_Z_Down")
-#write.csv(head(enrichedZ[[2]], 50),paste0(path,"/GOpadjLOGFC/","Jensen_DISEASES_Enrichment_Analysis_TestUp_Z",groupsName,".csv"))
-#if (websiteLive) plotEnrich(enrichedZ[[3]], showTerms = 30, numChar = 80, y = "Count", orderBy = "P.value", title ="GO_BP Enrichment Analysis Test_Z_Down")
-#write.csv(head(enrichedZ[[3]], 50),paste0(path,"/GOpadjLOGFC/","GO_BP_Enrichment_Analysis_TestUp_Z",groupsName,".csv"))
-
-```
 
 ### k-means clustering
 ```{r}
